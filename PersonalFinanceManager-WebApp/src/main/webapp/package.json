@@ -1,0 +1,23 @@
+{
+  "name": "webapp",
+  "version": "1.0.0",
+  "description": "Personal Finance Web Application",
+  "main": "pfapp.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Robert Suppenbach",
+  "license": "ISC",
+  "dependencies": {
+      "knockout": "^3.3.0",
+      "requirejs": "^2.1.20"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-jshint": "^0.11.3",
+    "grunt-contrib-less": "^1.0.1",
+    "grunt-contrib-qunit": "^0.7.0",
+    "grunt-contrib-requirejs": "^0.4.4"
+  },
+  "amd": {}
+}
