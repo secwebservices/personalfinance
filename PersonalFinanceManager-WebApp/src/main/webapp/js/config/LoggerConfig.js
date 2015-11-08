@@ -36,7 +36,7 @@ define([ "lib/log4javascript" ], function(log4javascript) {
 
     LoggerConfig.prototype.logLevel = undefined;
     
-    LoggerConfig.prototype.name = 'ECMConfig';
+    LoggerConfig.prototype.name = 'PersonalFinance';
 
     /**
      * setup

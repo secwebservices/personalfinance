@@ -1,6 +1,6 @@
 /*jslint browser: true, devel: true, unparam: true, evil: true */
 
-define([ 'modules/knockout/build/output/knockout-latest',
+define(['modules/knockout/build/output/knockout-latest',
          'core/config/LoggerConfig'
          ], function(ko, 
                  LoggerConfig) {

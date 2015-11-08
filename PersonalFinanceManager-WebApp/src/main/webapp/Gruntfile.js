@@ -31,8 +31,10 @@ module.exports = function(grunt) {
                     preserveLicenseComments : false,
                     name : "pfapp.js",
                     include : [
-                        'node_modules/requirejs/require.js'
-                    ],
+                      	'node_modules/requirejs/require.js',
+                        'node_modules/knockout/build/output/knockout-latest.debug.js',
+
+                        ],
                     out : "dist/<%= pkg.name %>.js"
                 }
             }

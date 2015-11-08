@@ -1,3 +1,6 @@
+/* jslint browser: true, devel: true, unparam: true, eval: true */
+/*global define, window, $ */
+
 define(['modules/knockout/build/output/knockout-latest', 'core/config/LoggerConfig'], function(ko, LoggerConfig){
     var logger = new LoggerConfig().getLogger('globals.js'),
     Globals = {
