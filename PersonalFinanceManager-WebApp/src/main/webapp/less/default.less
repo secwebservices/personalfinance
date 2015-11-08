@@ -1,0 +1,69 @@
+body {
+    margin: 0;
+    padding: 5px 10px; 
+    font-size: 12px;
+    min-height: 650px;
+    
+    &.ui-widget-content {
+        border: none;    
+    }
+}
+
+.header {
+    margin: 10px 0;
+    width: 100%;
+    height: 55px;
+    
+    .themechooser {
+	    float: right;
+	    margin-top: -15px;
+	}
+	
+	h2.name {
+	    font-size: 2em;
+	}
+}
+
+.ui-tabs-anchor:focus {
+    outline: none;
+}
+
+.ui-accordion-header:focus {
+    outline: none;
+}
+
+input {
+    border-top-left-radius: 5px;    
+    border-top-right-radius: 5px;   
+    border-bottom-left-radius: 5px; 
+    border-bottom-right-radius: 5px;
+    
+	:focus {
+	    border-color: lime;
+	}    
+}
+
+textarea {
+    border-top-left-radius: 5px;    
+    border-top-right-radius: 5px;   
+    border-bottom-left-radius: 5px; 
+    border-bottom-right-radius: 5px;
+    
+	&:focus {
+	    border-color: lime;
+	}    
+}
+
+select{
+	width: 150px;
+	
+	&:focus {
+	    border-color: lime;
+	}	
+}
+
+button:focus {
+    outline: none;
+}
+
+@import "progress.less";
