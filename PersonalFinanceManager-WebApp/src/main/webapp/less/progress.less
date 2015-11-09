@@ -1,6 +1,9 @@
+.ui-state-highlight {
+}
+
 #circularG{
     position:relative;
-    width:160px;
+    width:180px;
     height:120px;
     margin-left: auto;
     margin-right: auto;
@@ -8,7 +11,6 @@
 
 .circularG{
     position:absolute;
-    background: url('/images/ui-bg_gloss-wave_55_5c9ccc_500x100.png') 50% 50% no-repeat scroll #5C9CCC;
     width:15px;
     height:15px;
     -moz-border-radius:15px;
@@ -161,4 +163,102 @@ transform:scale(1)}
 100%{
 transform:scale(.3)}
 
+}
+
+body {
+	
+	.loadingWrapper {
+	    position: fixed;
+	    bottom: 0;
+	    width: ~"calc(100% - 20px)";
+	    height: 55px;
+	    z-index: 1001;
+	    border-width: 1px;
+	    background-position: 50% 50%;
+	    margin: 0 auto;
+	}
+	.loadingContainer {
+	    opacity: .85;
+	    filter:Alpha(Opacity=95);
+	}		
+	.savingWrapper {
+	    position: fixed;
+	    bottom: 0;
+	    width: ~"calc(100% - 20px)";
+	    height: 55px;
+	    z-index: 1001;
+	    border-width: 1px;
+	    background-position: 50% 50%;
+	    margin: 0 auto;
+	}
+	.savingContainer {
+	    opacity: .85;
+	    filter:Alpha(Opacity=95);
+	}		
+}
+
+.loadingIndicator{
+    width: 185px;
+    height: 75px;
+    margin: 0 auto;
+    
+	.loadingText{
+	    font-weight: bold;
+	    width: 75px;
+	    text-align: center;
+	    margin: -85px 0 0 10px;
+	    float: left;
+	}   
+	.itemCount {
+	    text-align: center;
+	    width: 125px;
+	    margin: -85px 0px 0px 20px;
+	    float: right; 
+	}	 
+}
+
+#progressbarcontainer {
+    .loadingIndicator {
+    
+        .loadingText{
+            font-size: 1.10em;
+            font-weight: bold;
+            width: 125px;
+            text-align: center;
+            margin: -90px auto 0;
+        }
+    }   
+}
+
+.progressbarcontainer {
+	.progressIndicator {
+	
+		.progressText{
+		    font-size: 1.10em;
+		    font-weight: bold;
+		    width: 125px;
+		    text-align: center;
+		    margin: -12px auto 0;
+		}
+	}	
+}
+
+.savingIndicator{
+    width: 185px;
+    height: 75px;
+    margin: 0 auto;
+    
+	.savingText{
+	    font-weight: bold;
+	    width: 75px;
+	    text-align: center;
+	    margin: -85px 0 0 10px;
+	    float: left;
+	} 
+	.itemCount {
+	    text-align: center;
+	    width: 125px;
+	    margin: -85px 0px 0px 20px;
+	    float: right;
+	}	   
 }

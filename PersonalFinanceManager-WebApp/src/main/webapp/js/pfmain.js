@@ -1,39 +1,63 @@
 /*jslint browser: true, devel: true, unparam: true, evil: true */
 
 define(['modules/knockout/build/output/knockout-latest',
-         'core/config/LoggerConfig'
+         'core/config/LoggerConfig',
+         'managers/TemplateManager',
+         'utilities/core/Mediator',
+         'utilities/core/AjaxHandlers'
          ], function(ko, 
-                 LoggerConfig) {
+                 LoggerConfig,
+                 TemplateManager,
+                 Mediator,
+                 AjaxHandlers
+                 ) {
     
     var App = {
             "logger": undefined,
-            "uiTheme": ko.observable("start"),
-            "uiThemes": uiThemes,
+            "financemanager": ko.observable({
+            	"user": ko.observable(undefined),
+            	"uiTheme": ko.observable("start"),
+            	"uiThemes": uiThemes
+            }),
             "load" : function(){
                 // Load Configuration form LocalStorage
                 var store = localStorage.PersonalFinanceManager_store, template, vm, box,
                 themeStore = localStorage.PersonalFinanceManager_theme;
 
                 if(themeStore){
-                    App.uiTheme(themeStore);
-                }
-            }            
+                    App.financemanager().uiTheme(themeStore);
+                }                
+            }
+                       
         };
     
-        (function () {
-            App.logger = new LoggerConfig().getLogger('app.js');
-            // Apply bindings
-            ko.applyBindings(App, document.getElementById("htmlTop"));
+        (function () {        	
+            App.logger = new LoggerConfig().getLogger('pfmain.js');
+            App.logger.info("Initializing Application Layer");
             
-            App.uiTheme.subscribe(function(value){
-                localStorage.PersonalFinance_theme = value;
+            App.financemanager().uiTheme.subscribe(function(value){
+                localStorage.PersonalFinanceManager_theme = value;
             });
-            
-            App.load();
+                        
+            TemplateManager.getTemplateList({
+                name: 'Personal Finance Manager',
+                projectPath: 'personalfinance',
+                context: App,
+                callback: function(){
+                    setTimeout(function() {
+                        // Apply bindings
+                        ko.applyBindings(App.financemanager, document.getElementById("htmlTop"));
+
+                        App.load();
+                    }, 15);
+                }
+            });  
         }());   
         
         $.extend(window, {
-            PFApp: App
+            PFApp: App,
+            TemplateManager: TemplateManager,
+            Mediator: Mediator
         });
         
         return App;

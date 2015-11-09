@@ -8195,6 +8195,530 @@ define('core/config/LoggerConfig',[ "lib/log4javascript" ], function(log4javascr
     // Return the function
     return LoggerConfig;
 });
+/*jslint browser: true, devel: true, unparam: true, evil: true, laxbreak: true */
+
+define('utilities/knockout/bindinghandlers',[ 'modules/knockout/build/output/knockout-latest', 'core/config/LoggerConfig'], function(ko, LoggerConfig) {
+    var existingBindingProvider, logger = new LoggerConfig().getLogger('bindinghandlers.js');
+    ko.bindingHandlers.selectedText = {
+        init : function(element, valueAccessor, allBindings) {
+            var value = valueAccessor(), options = allBindings().options;
+
+            $(element).find('option').each(function(index, option) {
+                if ( value() === option.value ) {
+                    logger.info(value(), option.value);
+                    $(element).prop('selected', true);
+                }
+            });
+
+            $(element).change(function() {
+                value($("option:selected", this).text());
+            });
+        }
+    };
+
+    ko.bindingHandlers.button = {
+        init : function(element, valueAccessor) {
+            var options = ko.utils.unwrapObservable(ko.toJS(valueAccessor())) || {};
+            $(element).button(options);
+
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+                $(element).button("destroy");
+            });
+        },
+        update : function(element, valueAccessor) {
+            var options = ko.toJS(valueAccessor());
+
+            if ( options ) {
+                $(element).button(options);
+            }
+        }
+    };
+
+    /**
+     * combobox jQuery UI combobox binding modified version of the autocomplete widget from jQuery UI
+     */
+    ko.bindingHandlers.combobox = {
+        init : function(element, valueAccessor) {
+            var options = ko.utils.unwrapObservable(ko.toJS(valueAccessor())) || {};
+            setTimeout(function() {
+                $(element).combobox(options);
+                $(element).removeClass("ui-widget");
+            }, 1);
+
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+                $(element).combobox("destroy");
+            });
+        },
+        update : function(element, valueAccessor) {
+            var options = ko.toJS(valueAccessor());
+
+            if ( options ) {
+                $(element).combobox(options);
+                $(element).removeClass("ui-widget");
+            }
+        }
+    };
+    ko.bindingHandlers.spinner = {
+        update : function(element, valueAccessor, allBindings) {
+            var options = ko.utils.unwrapObservable(ko.toJS(valueAccessor())) || {};
+
+            $.extend(options, {
+                change : function(event, ui) {
+                    allBindings().value($(element).val());
+                }
+            });
+
+            $(element).bind('focus', function() {
+                $(element).spinner(options);
+            });
+
+            $(element).bind('blur', function() {
+                $(element).spinner("destroy");
+            });
+        }
+    };
+
+    /**
+     * tabsFromFieldsets
+     * 
+     * converts a form with fieldsets into a tabs container. supports updates to the tabs via a resetTabs
+     * trigger example $(document).trigger('resetTabs');
+     * 
+     * usage <form data-bind="tabsFromFieldsets : { tabs options }" > .... </form>
+     */
+    ko.bindingHandlers.tabsFromFieldsets = {
+        init : function(element, valueAccessor, allBindingsAccessor) {
+            var config = valueAccessor() || {
+                selected : ko.observable(0)
+            }, tabList, index, fieldName;
+
+            logger.info(JSON.stringify(config, null, 2));
+
+            $(element).hide();
+            fieldName = $(element).attr('name');
+            tabList = $('<ul id="tabsList"></ul>');
+            $(element).prepend(tabList);
+
+            $(element).tabs(config);
+
+            $(document).on(
+                    'resetTabs',
+                    function() {
+                        index = 0;
+                        $(element).children('fieldset').each(
+                                function(idx, fieldset) {
+                                    if ( !$(fieldset).hasClass('tabContent') ) {
+                                        $(fieldset).attr('id', 'tab_' + fieldName + '_' + index).addClass(
+                                                'tabContent');
+
+                                        $(tabList).append(
+                                                '<li><a href="#tab_' + fieldName + '_' + index++ + '">'
+                                                        + $(fieldset).find("legend").html() + '</a></li>');
+
+                                        $(fieldset).find("legend").remove();
+                                    } else {
+                                        index++;
+                                    }
+                                });
+
+                        setTimeout(function() {
+                            try {
+                                $(element).tabs("refresh");
+
+                                if ( config.selected !== null ) {
+                                    $(element).tabs("option", "active", config.selected());
+                                }
+                            } catch (e) {
+                                logger.error(e.message);
+                            }
+
+                        }, 1);
+                    });
+
+            setTimeout(function() {
+                $(document).trigger('resetTabs');
+                $(element).fadeIn(500);
+            }, 1);
+        }
+    };
+
+    ko.bindingHandlers.accordion = {
+        init : function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+            var options = ko.utils.unwrapObservable(ko.toJS(valueAccessor())) || {}, watchFunc, watched = [], w, watchers = [], watchIt;
+            ko.applyBindingsToDescendants(bindingContext, element);
+            watchIt = allBindingsAccessor.get('watchIt') || false;
+            if ( watchIt ) {
+                if ( Object.prototype.toString.call(watchIt) === "[object Array]" ) {
+                    watchers = watchIt;
+                } else {
+                    watchers.push(watchIt);
+                }
+                watchFunc = function() {
+                    setTimeout(function() {
+                        var active = options.active || false;
+                        console.debug("Reapplying accordion binding based on watchIt");
+                        if ( !!$(element).data("ui-accordion") ) {
+                            active = $(element).accordion('active');
+                        }
+                        $(element).accordion(options).accordion('active', active);
+                    }, 1);
+                };
+                for ( w = 0; w < watchers.length; w += 1 ) {
+                    watched.push(watchers[w].subscribe(watchFunc));
+                }
+            }
+            setTimeout(function() {
+                $(element).accordion(options);
+            }, 1);
+
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+                $(element).accordion("destroy");
+                if ( watched.length > 0 ) {
+                    for ( w = 0; w < watched.length; w += 1 ) {
+                        watched[w].dispose();
+                    }
+                    watched = [];
+                }
+                return [
+                    allBindingsAccessor, viewModel
+                ];
+            });
+            return {
+                "controlsDescendantBindings" : true
+            };
+        },
+        update : function(element, valueAccessor) {
+            var options = ko.toJS(valueAccessor());
+
+            if ( options ) {
+                setTimeout(function() {
+                    $(element).accordion(options);
+                }, 1);
+            }
+        }
+    };
+
+    ko.bindingHandlers.fileUpload = {
+        init : function(element, valueAccessor, allBindingsAccessor) {
+            var fileInput = valueAccessor(), allBindings = allBindingsAccessor(), files = [
+                ko.utils.unwrapObservable(ko.toJS(fileInput))
+            ];
+
+            $(element).hide();
+            $('.progress').hide();
+            $('.uploadStatus').hide();
+
+            $(element).fileupload({
+                dataType : 'json',
+
+                done : function(e, data) {
+                    var lastUploaded = data.result.pop();
+                    logger.info(lastUploaded);
+                    fileInput(lastUploaded.fileName);
+                    $('.progress').progressbar('destroy');
+                    $('.progress').hide();
+                    $('.uploadStatus').hide();
+                },
+                add : function(e, data) {
+                    $('.progress').show();
+                    $('.uploadStatus').show();
+                    $('.uploadStatus').html("Uploading...");
+                    $('.progress').progressbar();
+                    data.submit();
+                },
+
+                progress : function(e, data) {
+                    var progress = parseInt(data.loaded / data.total * 100, 10);
+                    logger.info(progress);
+                    $('.progress').progressbar("option", "value", progress);
+
+                    if ( progress === 100 ) {
+                        $('.uploadStatus').html("Upload Complete - Processing...");
+                    } else {
+                        $('.uploadStatus').html("Uploading... " + progress + "%");
+                    }
+                },
+                progressInterval : 50,
+                formData : {
+                    path : allBindings.path || ''
+                },
+
+                dropZone : $('.dropzone')
+            });
+
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+                $(element).fileupload("destroy");
+            });
+        }
+    };
+
+    ko.bindingHandlers.sortableGroups = {
+        "init" : function(element, valueAccessor, allBindingsAccessor) {
+            var setup, config = valueAccessor(), allBindings, value, sub;
+            function disposal() {
+                sub.dispose();
+                $(element).sortable("destroy");
+
+            }
+            function update() {
+                setTimeout(function() {
+                    $(element).sortable("destroy");
+                    setup();
+                }, 1);
+            }
+            setup = function() {
+                try {
+                    $(element).sortable({
+                        "handle" : ".ui-accordion-header",
+                        "placeholder" : "ui-state-highlight",
+                        "forcePlaceholderSize" : true
+                    }).bind(
+                            'sortupdate',
+                            function(event, ui) {
+                                setTimeout(function() {
+                                    var order = [];
+                                    if ( $(element).find(ui) ) {
+                                        $(element).children('.ui-accordion').each(
+                                                function(x, el) {
+                                                    logger.info("Adding data-sortname to order listing");
+                                                    order.push($(el).find('.ui-accordion-header').first().attr(
+                                                            'data-sortname'));
+                                                });
+                                        console.debug("Identified sort order", order);
+                                        $(element).children('.ui-accordion').each(function(el) {
+                                            ko.utils.domNodeDisposal.removeDisposeCallback(el, update);
+                                        });
+                                        setTimeout(function() {
+                                            value.sort(function(a, b) {
+                                                var ret = 1;
+                                                if ( order.indexOf(a.name()) < 0 ) {
+                                                    console.warn("Could not find index of element name:", a
+                                                            .name());
+                                                }
+                                                if ( order.indexOf(b.name()) < 0 ) {
+                                                    console.warn("Could not find index of element name:", b
+                                                            .name());
+                                                }
+                                                if ( order.indexOf(a.name()) < order.indexOf(b.name()) ) {
+                                                    ret = -1;
+                                                }
+                                                return ret;
+                                            });
+                                            App.update();
+                                        }, 1);
+                                    }
+                                }, 1);
+                            });
+                    $(element).children('.ui-accordion').each(function(el) {
+                        ko.utils.domNodeDisposal.addDisposeCallback(el, update);
+                    });
+                } catch (e) {
+                    console.error("Error in sortableEntries", e.message, e.stack, e);
+                }
+            };
+            if ( config ) {
+                allBindings = allBindingsAccessor();
+                value = allBindings.foreach || allBindings.template.foreach;
+                if ( value ) {
+                    sub = value.subscribe(update);
+                    ko.utils.domNodeDisposal.addDisposeCallback(element, disposal);
+                    setup();
+                }
+            }
+        }
+    };
+
+    ko.bindingHandlers.sortableDataPoints = {
+        "init" : function(element, valueAccessor, allBindingsAccessor) {
+            var setup, config = valueAccessor(), allBindings, value, sub;
+            function disposal() {
+                sub.dispose();
+                $(element).sortable("destroy");
+
+            }
+            function update() {
+                setTimeout(function() {
+                    $(element).sortable("destroy");
+                    setup();
+                }, 1);
+            }
+            setup = function() {
+                try {
+                    $(element).sortable({
+                        "handle" : ".ui-accordion-header",
+                        "placeholder" : "ui-state-highlight",
+                        "forcePlaceholderSize" : true
+                    }).bind(
+                            'sortupdate',
+                            function(event, ui) {
+                                setTimeout(function() {
+                                    var order = [];
+                                    if ( $(element).find(ui) ) {
+                                        $(element).children('.ui-accordion').each(
+                                                function(x, el) {
+                                                    logger.info("Adding data-sortname to order listing");
+                                                    order.push($(el).find('.ui-accordion-header').first().attr(
+                                                            'data-sortname'));
+                                                });
+                                        console.debug("Identified sort order", order);
+                                        $(element).children('.ui-accordion').each(function(el) {
+                                            ko.utils.domNodeDisposal.removeDisposeCallback(el, update);
+                                        });
+                                        setTimeout(function() {
+                                            value.sort(function(a, b) {
+                                                var ret = 1;
+                                                if ( order.indexOf(a.cellReference()) < 0 ) {
+                                                    console.warn("Could not find index of element name:", a
+                                                            .cellReference());
+                                                }
+                                                if ( order.indexOf(b.cellReference()) < 0 ) {
+                                                    console.warn("Could not find index of element name:", b
+                                                            .cellReference());
+                                                }
+                                                if ( order.indexOf(a.cellReference()) < order.indexOf(b
+                                                        .cellReference()) ) {
+                                                    ret = -1;
+                                                }
+                                                return ret;
+                                            });
+                                            App.update();
+                                        }, 1);
+                                    }
+                                }, 1);
+                            });
+                    $(element).children('.ui-accordion').each(function(el) {
+                        ko.utils.domNodeDisposal.addDisposeCallback(el, update);
+                    });
+                } catch (e) {
+                    console.error("Error in sortableEntries", e.message, e.stack, e);
+                }
+            };
+            if ( config ) {
+                allBindings = allBindingsAccessor();
+                value = allBindings.foreach || allBindings.template.foreach;
+                if ( value ) {
+                    sub = value.subscribe(update);
+                    ko.utils.domNodeDisposal.addDisposeCallback(element, disposal);
+                    setup();
+                }
+            }
+        }
+    };
+
+    ko.bindingHandlers.foreachprop = {
+        transformObject : function(obj) {
+            var key, properties = [];
+            for ( key in obj ) {
+                if ( obj.hasOwnProperty(key) ) {
+                    properties.push({
+                        key : key,
+                        value : obj[key]
+                    });
+                }
+            }
+            return properties;
+        },
+        init : function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+            var sub, value = ko.utils.unwrapObservable(valueAccessor()), properties = ko
+                    .observableArray(ko.bindingHandlers.foreachprop.transformObject(value));
+            function update() {
+                try {
+                    value = ko.utils.unwrapObservable(valueAccessor());
+                    properties(ko.bindingHandlers.foreachprop.transformObject(value));
+                } catch (e) {
+                    console.error("Error in foreachprop binding", e.message, e.stack, e);
+                }
+            }
+            ko.applyBindingsToNode(element, {
+                foreach : properties
+            }, bindingContext);
+            try {
+                sub = valueAccessor().subscribe(update);
+                ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+                    sub.dispose();
+                });
+            } catch (e) {
+                console.error("Error in foreachprop binding", e.message, e.stack, e);
+            }
+            return {
+                controlsDescendantBindings : true
+            };
+        }
+    };
+
+    ko.bindingHandlers.menu = {
+        init : function(element, valueAccessor) {
+            var options = ko.utils.unwrapObservable(ko.toJS(valueAccessor())) || {};
+            setTimeout(function() {
+                $(element).menu(options);
+            }, 1);
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+                $(element).menu("destroy");
+            });
+        },
+        update : function(element, valueAccessor) {
+            setTimeout(function() {
+                $(element).menu("option", "value", valueAccessor());
+            }, 1);
+        }
+    };
+
+    ko.extenders.numeric = function(target, precision) {
+        // create a writeable computed observable to intercept writes to our observable
+        var result = ko
+                .computed(
+                        {
+                            read : target, // always return the original observables value
+                            write : function(newValue) {
+                                var current = target(), roundingMultiplier = Math.pow(10, precision), newValueAsNum = isNaN(newValue) ? 0
+                                        : parseFloat(+newValue), valueToWrite = Math.round(newValueAsNum
+                                        * roundingMultiplier)
+                                        / roundingMultiplier;
+                                if ( valueToWrite !== newValue && newValue === null ) {
+                                    valueToWrite = null;
+                                }
+                                // only write if it changed
+                                if ( valueToWrite !== current ) {
+                                    target(valueToWrite);
+                                } else {
+                                    // if the rounded value is the same, but a different value was written,
+                                    // force a notification for the current field
+                                    if ( newValue !== current ) {
+                                        target.notifySubscribers(valueToWrite);
+                                    }
+                                }
+                            }
+                        }).extend({
+                    notify : 'always'
+                });
+
+        // initialize with current value to make sure it is rounded appropriately
+        result(target());
+
+        // return the new computed observable
+        return result;
+    };
+
+    existingBindingProvider = ko.bindingProvider.instance;
+
+    /**
+     * bindingProvider Logs binding errors
+     */
+    ko.bindingProvider.instance = {
+        nodeHasBindings : existingBindingProvider.nodeHasBindings,
+        getBindings : function(node, bindingContext) {
+            var bindings;
+            try {
+                bindings = existingBindingProvider.getBindings(node, bindingContext);
+            } catch (ex) {
+                logger.info("Binding Error", node, ex.message, ex.stack);
+            }
+
+            return bindings;
+        }
+    };
+
+});
 /* jslint browser: true, devel: true, unparam: true, eval: true */
 /*global define, window, $ */
 
@@ -8247,42 +8771,715 @@ define('core/globals',['modules/knockout/build/output/knockout-latest', 'core/co
     
     return Globals;
 });
+/*global define, $, window*/
+define('managers/TemplateManager',['modules/knockout/build/output/knockout-latest',
+         'core/config/LoggerConfig'], function (ko, LoggerConfig) {
+    'use strict';
+    
+    var instance;
+    function init() {
+        
+        var logger,
+            templateList = {},
+            templates = {},
+            stringTemplateEngine, 
+            StringTemplateSource,
+            _config = {
+                name : 'Dashboard',
+                projectPath : 'dashboard',
+                applyBindingsOnLoad : false
+            };
+
+        logger = new LoggerConfig().getLogger("TemplateManager.js");
+        logger.info("Initializing Template Manager");
+        
+        function getTemplateCount(){
+            var count = 0, k;
+            for (k in templates) {
+                if (templates.hasOwnProperty(k)) {
+                   ++count;
+                }
+            }
+            return count;
+        }   
+        
+        /**
+         * convertName(name, dotNotation)
+         * converts a filename to a template name
+         * can also return in dot notation.
+         */
+        function convertName(name, dotNotation) {
+            var converted;
+            try {
+                // first remove the .htm extension
+                converted = name.substring(0, name.length - 4);
+                
+                // strip out top level paths
+                converted = converted.substring(name.lastIndexOf("/") + 1);
+                             
+                // if the dotNotation flag is set convert to dot notation
+                if(dotNotation){
+                    converted = converted.replace(new RegExp("_", 'g'), ".");                    
+                }
+            } catch (e) {
+                logger.error(e.stack);
+            }
+
+            return converted;
+        }     
+        
+        /**
+         * applyBindings(context)
+         * helper to ko.applyBindings logs errors when application fails. 
+         */
+        function applyBindings(context) {
+            try {
+                ko.applyBindings(context);
+            } catch (e) {
+                logger.error("Error applying knockout bindings", e, e.stack);
+            }
+        }        
+        
+        /**
+         * getEntry(obj, entry)
+         * 
+         * returns a single entry from the list of loaded templates
+         */
+        function getEntry(obj, entry) { //templates, template
+            var returner = true, i, entryList, entryPoint = obj;
+            if (entryPoint) {
+                entryList = entry.split(/\./);
+                for (i = 0; i < entryList.length; i += 1) {
+                    if (entryPoint[entryList[i]] !== undefined) {
+                        entryPoint = entryPoint[entryList[i]];
+                    } else {
+                        returner = undefined;
+                        break;
+                    }
+                }
+                if (returner) {
+                    returner = entryPoint;
+                }
+            } else {
+                returner = undefined;
+            }
+            return returner;
+        }     
+        
+        /**
+         * clearEntry(obj, entry)
+         * 
+         * clears a single entry from the list of templates
+         */
+        function clearEntry(obj, entry) {//templates, template
+            var returner = obj, i, entryList, entryPoint = obj;
+            if (entryPoint) {
+                entryList = entry.split(/\./);
+                for (i = 0; i < entryList.length; i += 1) {
+                    if (entryPoint[entryList[i]] !== undefined) {
+                        delete entryPoint[entryList[i]];
+                    } else {
+                        break;
+                    }
+                }
+                returner = entryPoint;
+            }
+            
+            return returner;
+        }        
+        
+        
+        /**
+         * enque(config)
+         *  
+         * template {
+         *      name : 'templateName',
+         *      path : 'path/to/html'
+         *  }          
+         * 
+         */
+        function enque(template) {
+            templateList[template.name] = {
+                name: template.name,
+                path: template.path
+            };
+        }  
+        
+        /**
+         * getTemplateList(config)
+         * config {
+         *      name : 'app name',
+         *      projectPath : 'root_path',
+         *      applyBindingsOnLoad : true/false - default: false
+         * }
+         */
+        function getTemplateList(config) {
+            var templateItem = {}, template;
+
+            $.extend(_config, config);
+            
+            $.ajax({url:'/api/utilities/gethtmltemplates/'+config.projectPath,
+                "global": false,
+                "dataType": "json",
+                "contentType": "application/json; charset=UTF-8", 
+                "success":function(templates) {
+                    var templateName = '', percent = 0;
+                    if ( templates !== null && templates.length > 0 ) {
+                        for(template = 0; template < templates.length; template++){
+                            templateName = convertName(templates[template]);
+                            enque({
+                                name : templateName,
+                                path : templates[template]
+                            });
+                        }
+                        
+                    }else{
+                        templateList = config.templateList;
+                    }
+                    
+                    if(config.callback && typeof(config.callback) === 'function'){
+                        setTimeout(function(){
+                            config.callback();                            
+                        }, 1);
+                    }
+                }
+            }); 
+        }
+        
+        /**
+         * setTemplateList(config)
+         * config { 
+         *      callback : function(){}, 
+         *      templateList : {}, 
+         *      context: bindingContext,
+         *      name : 'app name',
+         *      projectPath : 'root_path',
+         *      applyBindingsOnLoad : true/false - default: false
+         * }
+         *  
+         * config.templateList is formatted
+         *  { 
+         *      'templateName' : {
+         *          name : 'templateName',
+         *          path : 'path/to/html'
+         *      }
+         *  } ...              
+         * 
+         *  sets the list of templates to use and calls the callback
+         * 
+         */
+        function setTemplateList(config) {
+            var templateItem = {}, template;
+            
+            $.extend(_config, config);
+            
+            templateList = config.templateList;
+            
+            if(config.callback && typeof(config.callback) === 'function'){
+                config.callback();
+            }
+        }         
+        
+        /**
+         * loadTemplate(templateName)
+         * 
+         * loads in the HTML for a specific template (lazy loading)
+         */
+        function loadTemplate(templateName) {
+            var template, context = _config.context;
+            
+            template = templateList[templateName];
+            
+            if(template){
+                $.ajax(template.path, {
+                    cache:false,
+                    async:false,
+                    success: function(html, status, jqXHR){
+                        templateName = template.name;
+                        
+                        templates[templateName] = html;
+                        
+                        if(_config.applyBindingsOnLoad){
+                            applyBindings(context);   
+                        }
+
+                    },
+                    error: function(jqXHR, status, error){
+                        logger.error("File load", status, "'" + JSON.stringify(template) + "'");
+                    }
+                });                  
+            }  
+        }        
+        
+        /**
+         * getTemplate(template)
+         * 
+         * helper gets a specific templates HTML value
+         */
+        function getTemplate(template) {
+            var templateEntry;
+            
+            templateEntry =  getEntry(templates, template);
+            
+            if(!templateEntry){
+                loadTemplate(template);
+                templateEntry = getEntry(templates, template);
+            }
+            
+            return templateEntry || '';
+        }     
+        
+        /**
+         * clearTemplate(template)
+         * 
+         * clear a templates HTML data
+         */
+        function clearTemplate(template) {
+            templates = clearEntry(templates, template);
+        }        
+
+        /**
+         * StringTemplate(template, options)
+         * 
+         * Wrpper Used with the Knockout StringTemplateEngine.
+         */
+        function StringTemplate(template, options) {
+            if (!(options && options.special) && template.match(/^\w+(?:\.\w+)*$/)) {
+                this.templateName = template;
+                this.templateSrc = false;
+            } else {
+                this.templateName = String.uuid();
+                this.templateSrc = template;
+            }
+        }
+        
+        
+        $.extend(StringTemplate.prototype, {
+            data: function(key, value) {
+                if (arguments.length === 1) {
+                    return getTemplate(this.templateName);
+                }
+            },
+            text: function(value) {
+                if (arguments.length === 0) {
+                   return getTemplate(this.templateName);
+                }   
+            }
+        });        
+        
+        /**
+         * createStringTemplateEngine(engine)
+         * 
+         * wraps the StringTemplateEngine allowing for access to inline templates.
+         */
+        function createStringTemplateEngine(engine) {
+            engine.renderTemplate = function (template, bindingContext, options) {
+                var templateSource = this.makeTemplateSource(template, options);
+                return this.renderTemplateSource(templateSource, bindingContext, options);
+            };
+            engine.makeTemplateSource = function (template, options) {
+                return new StringTemplate(template, options);
+            };
+            return engine;
+        }
+        
+        ko.setTemplateEngine(createStringTemplateEngine(new ko.nativeTemplateEngine()));
+
+                
+        return {
+            "getTemplateList": getTemplateList,
+            "setTemplateList": setTemplateList,
+            "applyBindings": applyBindings,
+            "getTemplate": getTemplate,
+            "clearTemplate": clearTemplate,
+            "enque": enque
+        };   
+    }
+    
+    return (function () {
+        if (!instance) {
+            instance = init();
+        }
+        return instance;
+    }());  
+    
+});
+
+/*global define, $*/
+
+/**
+ * @author Robert “The Man” Suppenbach
+ */
+define('utilities/core/Mediator',['core/config/LoggerConfig'], function (LoggerConfig) {
+    'use strict';
+    var instance;
+    function init() {
+        var channels = {}, logger;
+        logger = new LoggerConfig().getLogger('Mediator.js');
+        function GUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.floor(Math.random() * 16), v = c === 'x' ? r : (r % 4) + 8;
+                return v.toString(16);
+            });
+        }
+        function Subscription(options) {
+            this.id = GUID();
+            this.channel = options.channel;
+            this.callback = options.callback;
+            if (options.context) {
+                this.context = options.context;
+            } else {
+                this.context = false;
+            }
+            if (options.count) {
+                this.count = options.count;
+            }
+        }
+        function Message(options) {
+            var i;
+            this.id = GUID();
+            this.propagationStopped = false;
+            try {
+                for ( i in options ) {
+                    if ( options.hasOwnProperty(i) ) {
+                        this[i] = options[i];
+                    }
+                }
+            } catch (e) {
+                logger.error(e);
+            }
+        }
+        Message.prototype.stopPropagation = function () {
+            this.propagationStopped = true;
+        };
+        function error() {
+            var args = arguments;
+            if (logger !== undefined) {
+                logger.error.apply(logger, args);
+            } else if (console !== undefined && console.error !== undefined) {
+                console.error.call(args);
+            }
+        }
+        function find(filter) {
+            var subs = [], c, s, f, match;
+            if (filter) {
+                for (c in channels) {
+                    if (channels.hasOwnProperty(c)) {
+                        for (s = 0; s < channels[c].length; s += 1) {
+                            match = true;
+                            if (filter instanceof Subscription) {
+                                if (channels[c][s] !== filter) {
+                                    match = false;
+                                }
+                            } else {
+                                for (f in filter) {
+                                    if (filter.hasOwnProperty(f)) {
+                                        if (channels[c][s].hasOwnProperty(f)) {
+                                            if (channels[c][s][f] !== filter[f]) {
+                                                match = false;
+                                                break;
+                                            }
+                                        } else {
+                                            match = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            if (match) {
+                                subs.push(channels[c][s]);
+                            }
+                        }
+                    }
+                }
+            }
+            return subs;
+        }
+        function subscribe(options) {
+            var sub = false;
+            if (typeof options.channel === 'string' && typeof options.callback === 'function') {
+                if (find({"channel": options.channel, "callback": options.callback}).length === 0) {
+                    sub = new Subscription(options);
+                    if (channels[sub.channel] === undefined) {
+                        channels[sub.channel] = [];
+                    }
+                    channels[sub.channel].push(sub);
+                }
+            }
+            return sub;
+        }
+        function unsubscribe(options) {
+            var ret = false, subs = find(options), s, i;
+            if (subs.length) {
+                for (s = 0; s < subs.length; s += 1) {
+                    i = channels[subs[s].channel].indexOf(subs[s]);
+                    channels[subs[s].channel].splice(i, 1);
+                    ret = true;
+                    if (channels[subs[s].channel].length === 0) {
+                        delete channels[subs[s].channel];
+                    }
+                }
+            }
+            return ret;
+        }
+        function publish(options) {
+            var ret = false, message, subs, expired = [], s;
+            
+            
+            if (typeof options.channel === 'string' && options.propagationStopped === undefined && options.stopPropagation === undefined && options.set === undefined) {
+                subs = find({"channel": options.channel});
+                if (subs.length > 0) {
+                    ret = message = new Message(options);
+                    for (s = 0; s < subs.length; s += 1) {
+                        try {
+                            subs[s].callback.apply(subs[s].context, [message]);
+                        } catch (e) {
+                            error("Mediator publish error for channel", options.channel, e.message, e.stack, e);
+                        }
+                        if (subs[s].count !== undefined) {
+                            subs[s].count -= 1;
+                            if (subs[s].count === 0) {
+                                expired.push(subs[s]);
+                            }
+                        }
+                        if (message.propagationStopped) {
+                            break;
+                        }
+                    }
+                    for (s = 0; s < expired.length; s += 1) {
+                        unsubscribe(expired[s]);
+                    }
+                }
+            }
+            return ret;
+        }
+        return {
+            "subscribe": subscribe,
+            "unsubscribe": unsubscribe,
+            "publish": publish
+        };
+    }
+    return (function () {
+        if (!instance) {
+            instance = init();
+        }
+        return instance;
+    }());
+});
+/*global define, $, window*/
+define('utilities/core/AjaxHandlers',['modules/knockout/build/output/knockout-latest',
+         'core/config/LoggerConfig',
+         'utilities/core/Mediator'], function (ko, LoggerConfig, Mediator) {
+    'use strict';
+    
+    var instance;
+    function init() {
+    	
+    	var logger, loadingOverlay, loadingTimer, saveOverlay, 
+        loadingOverlays = 0, savingOverlays = 0, 
+        loadingModel = {loadingCount : ko.observable(loadingOverlays)}, 
+        savingModel = {savingCount : ko.observable(savingOverlays)};
+
+        logger = new LoggerConfig().getLogger("AjaxHandlers.js");
+        logger.info("Initializing Ajax Handlers");
+    	
+    	function registerAjaxListeners() {
+            $(document).ajaxSend(function(event, jqxhr, settings ){
+                logger.debug("AJAX", settings.type,  "call to server:", settings.url);
+                
+                if(settings.url.indexOf('loading.htm') < 0 && settings.url.indexOf('saving.htm') < 0){
+                    if(settings.url.indexOf('save') > 0){
+                        Mediator.publish({"channel" : "show-saving"});
+                    }else{
+                        Mediator.publish({"channel" : "show-loading"});   
+                    }
+                }
+                
+                if(!settings.async){
+                    setTimeout(function(){
+                        return true;
+                    }, 300);
+                }else{
+                    return true;
+                }
+                
+            });
+            
+            $(document).ajaxComplete(function(event, xhr, settings){
+                logger.debug("AJAX", settings.type, settings.url, "call to server complete");
+                
+                if(settings.url.indexOf('loading.htm') < 0 && settings.url.indexOf('saving.htm') < 0){
+                    if(settings.url.indexOf('save') > 0){
+                        Mediator.publish({"channel" : "hide-saving"});
+                    }else{
+                        Mediator.publish({"channel" : "hide-loading"});                    
+                    }                    
+                }
+            }); 
+            
+            
+            $(document).ajaxSuccess(function(event, xhr, settings) {
+                logger.debug('AJAX', settings.type, settings.url, xhr.status, xhr.statusText, settings.dataType);
+            });
+            
+            $(document).ajaxError(function(event, xhr, settings, exception) {
+                logger.debug('AJAX', settings.type, settings.url, xhr.status, xhr.statusText, settings.dataType, exception);  
+            });               
+        }    	
+    	
+        Mediator.subscribe({
+            "channel": "show-loading",
+            "context": self,
+            "callback": function(){
+                if(!loadingOverlay){
+                    loadingOverlay = $(TemplateManager.getTemplate('loading'));
+                    $('body').prepend(loadingOverlay);
+                    ko.applyBindings(loadingModel, loadingOverlay[0]);
+                }
+
+                loadingOverlays++;
+                loadingModel.loadingCount(loadingOverlays);
+                if(!$(loadingOverlay).is(':visible')){
+                    $(loadingOverlay).fadeIn(250);
+                    if(!$("body").hasClass('wait')){
+                        $("body").addClass("wait");
+                    } 
+                }                  
+            }
+        });
+        Mediator.subscribe({
+            "channel": "hide-loading",
+            "context": self,
+            "callback": function(){
+                if(loadingOverlay){
+                    loadingOverlays--;
+                    
+                    if(loadingOverlays < 1){
+                        loadingOverlays = 0;
+                        $(loadingOverlay).fadeOut(500, function(){
+                            if($("body").hasClass('wait')){
+                                $("body").removeClass("wait");  
+                            }                                
+                        });
+                    }else{
+                        loadingModel.loadingCount(loadingOverlays);
+                    }
+                }                  
+            }
+        });             
+        Mediator.subscribe({
+            "channel": "show-saving",
+            "context": self,
+            "callback": function(){
+                if(!saveOverlay){
+                    saveOverlay = $(TemplateManager.getTemplate('saving'));
+                    $('body').prepend(saveOverlay);
+                    ko.applyBindings(savingModel, saveOverlay[0]);
+                }
+
+                savingOverlays++;
+                savingModel.savingCount(savingOverlays);
+                
+                if(!$(saveOverlay).is(':visible')){
+                    $(saveOverlay).fadeIn(250);
+                }                    
+            }
+        });
+        Mediator.subscribe({
+            "channel": "hide-saving",
+            "context": self,
+            "callback": function(){
+                setTimeout(function(){
+                    if(saveOverlay){
+                        savingOverlays--;
+                        
+                        if(savingOverlays < 1){
+                            savingOverlays = 0;
+                            $(saveOverlay).fadeOut(500);
+                        }else{
+                            savingModel.savingCount(savingOverlays);
+                        }
+                    }                          
+                }, 1);
+              
+            }
+        });  
+        
+        return {
+            "registerAjaxListeners": registerAjaxListeners
+        }; 
+    }
+    
+    return (function () {
+        if (!instance) {
+            instance = init();
+            instance.registerAjaxListeners();
+        }
+        return instance;
+    }());  
+            
+            
+});
 /*jslint browser: true, devel: true, unparam: true, evil: true */
 
 define('core/pfmain',['modules/knockout/build/output/knockout-latest',
-         'core/config/LoggerConfig'
+         'core/config/LoggerConfig',
+         'managers/TemplateManager',
+         'utilities/core/Mediator',
+         'utilities/core/AjaxHandlers'
          ], function(ko, 
-                 LoggerConfig) {
+                 LoggerConfig,
+                 TemplateManager,
+                 Mediator,
+                 AjaxHandlers
+                 ) {
     
     var App = {
             "logger": undefined,
-            "uiTheme": ko.observable("start"),
-            "uiThemes": uiThemes,
+            "financemanager": ko.observable({
+            	"user": ko.observable(undefined),
+            	"uiTheme": ko.observable("start"),
+            	"uiThemes": uiThemes
+            }),
             "load" : function(){
                 // Load Configuration form LocalStorage
                 var store = localStorage.PersonalFinanceManager_store, template, vm, box,
                 themeStore = localStorage.PersonalFinanceManager_theme;
 
                 if(themeStore){
-                    App.uiTheme(themeStore);
-                }
-            }            
+                    App.financemanager().uiTheme(themeStore);
+                }                
+            }
+                       
         };
     
-        (function () {
-            App.logger = new LoggerConfig().getLogger('app.js');
-            // Apply bindings
-            ko.applyBindings(App, document.getElementById("htmlTop"));
+        (function () {        	
+            App.logger = new LoggerConfig().getLogger('pfmain.js');
+            App.logger.info("Initializing Application Layer");
             
-            App.uiTheme.subscribe(function(value){
-                localStorage.PersonalFinance_theme = value;
+            App.financemanager().uiTheme.subscribe(function(value){
+                localStorage.PersonalFinanceManager_theme = value;
             });
-            
-            App.load();
+                        
+            TemplateManager.getTemplateList({
+                name: 'Personal Finance Manager',
+                projectPath: 'personalfinance',
+                context: App,
+                callback: function(){
+                    setTimeout(function() {
+                        // Apply bindings
+                        ko.applyBindings(App.financemanager, document.getElementById("htmlTop"));
+
+                        App.load();
+                    }, 15);
+                }
+            });  
         }());   
         
         $.extend(window, {
-            PFApp: App
+            PFApp: App,
+            TemplateManager: TemplateManager,
+            Mediator: Mediator
         });
         
         return App;
@@ -8290,7 +9487,7 @@ define('core/pfmain',['modules/knockout/build/output/knockout-latest',
 /* jslint browser: true, devel: true, unparam: true, eval: true */
 // For any third party dependencies, like jQuery, place them in the lib folder.
 
-requirejs(['modules/knockout/build/output/knockout-latest', 'core/globals', 'core/pfmain']);
+requirejs(['utilities/knockout/bindinghandlers', 'core/globals', 'core/pfmain']);
 define("pfapp.js", function(){});
 
 /*!

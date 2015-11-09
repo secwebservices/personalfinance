@@ -1,0 +1,134 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:mvc="http://www.springframework.org/schema/mvc" 
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd 
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.1.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+        http://www.springframework.org/schema/tx 
+        http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+        http://www.springframework.org/schema/mvc 
+        http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd">
+
+
+    <tx:annotation-driven/> 
+
+    <!-- ========================== JDBC & Hibernate Definitions ====================== -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass">
+            <value>${jdbc.driverClassName}</value>
+        </property>
+        <property name="jdbcUrl">
+            <value>${jdbc.url}</value>
+        </property>
+        <property name="user">
+            <value>${jdbc.username}</value>
+        </property>
+        <property name="password">
+            <value>${jdbc.password}</value>
+        </property>
+        <property name="initialPoolSize">
+            <value>${jdbc.initialPoolSize}</value>
+        </property>
+        <property name="minPoolSize">
+            <value>${jdbc.minPoolSize}</value>
+        </property>
+        <property name="maxPoolSize">
+            <value>${jdbc.maxPoolSize}</value>
+        </property>
+        <property name="maxIdleTime">
+            <value>${jdbc.maxIdleTime}</value>
+        </property>
+        <property name="debugUnreturnedConnectionStackTraces">
+            <value>true</value>
+        </property>
+        <property name="unreturnedConnectionTimeout">
+            <value>7200</value>
+        </property>
+        <property name="automaticTestTable">
+            <value>c3p0testconnections</value>
+        </property>
+        <property name="idleConnectionTestPeriod">
+            <value>600</value>
+        </property>
+        <property name="testConnectionOnCheckin">
+            <value>true</value>
+        </property>
+    </bean>
+
+ 
+    <bean id="sessionFactory"
+        class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+        <property name="dataSource">
+            <ref local="dataSource" />
+        </property>
+        <property name="annotatedClasses">
+            <list>
+                <value>com.secwebservices.entities.account.AccountEntity</value>
+                <value>com.secwebservices.entities.client.ClientEntity</value>
+                <value>com.secwebservices.entities.role.RoleEntity</value>
+                <value>com.secwebservices.entities.user.UserEntity</value>
+            </list>
+        </property>
+        <property name="eventListeners">
+            <map>
+                <entry key="merge">
+                    <bean
+                        class="org.springframework.orm.hibernate3.support.IdTransferringMergeEventListener" />
+                </entry>
+            </map>
+        </property>
+
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+                <prop key="hibernate.query.substitutions">true=1 false=0</prop>
+                <prop key="hibernate.generate_statistics">${hibernate.generate_statistics}</prop>
+                <prop key="hibernate.connection.autocommit">false</prop>
+                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+                <prop key="hibernate.format_sql">${hibernate.format_sql}</prop>
+                <prop key="hibernate.use_sql_comments">${hibernate.use_sql_comments}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- ================= Transaction Management =========== -->
+    <bean id="transactionManager"
+        class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory" />
+    </bean>
+
+    <bean id="flyway" class="com.googlecode.flyway.core.Flyway"
+        init-method="migrate" depends-on="dataSource">
+        <property name="dataSource" ref="dataSource" />
+        <property name="initOnMigrate" value="true" />
+        <property name="locations" value="db/migration" />
+    </bean>
+
+
+   <bean id="serviceManager" class="com.secwebservices.serverservice.ServiceManager" autowire="byName">
+   </bean>  
+   
+    <!-- Services -->
+    <bean id="accountService"
+        class="com.secwebservices.serverservice.service.impl.AccountServiceImpl" />
+    <bean id="clientService"
+        class="com.secwebservices.serverservice.service.impl.ClientServiceImpl" />
+    <bean id="roleService"
+        class="com.secwebservices.serverservice.service.impl.RoleServiceImpl" />    
+    <bean id="userService"
+        class="com.secwebservices.serverservice.service.impl.UserServiceImpl" />
+
+                 
+    <!-- Spring password encoder -->
+    <bean id="passwordEncoder"
+        class="org.springframework.security.crypto.password.StandardPasswordEncoder"
+        autowire="byName" />
+      
+</beans>

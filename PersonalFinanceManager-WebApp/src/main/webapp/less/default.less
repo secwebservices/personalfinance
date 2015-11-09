@@ -4,25 +4,73 @@ body {
     font-size: 12px;
     min-height: 650px;
     
-    &.ui-widget-content {
+/*     &.ui-widget-content {
         border: none;    
-    }
-}
-
-.header {
-    margin: 10px 0;
-    width: 100%;
-    height: 55px;
+    } */
     
-    .themechooser {
-	    float: right;
-	    margin-top: -15px;
+	.header {
+        margin: 10px 0 0 0;
+	    width:  ~"calc(100% - 10px)";
+	    display: block;
+	
+	    .wrapper {
+	        position: relative;
+	        overflow: hidden;
+	        height: 66px;
+	    }
+        
+	    .themechooser {
+	        float: right;
+	        right: 4px;
+	        top: 5px;
+	        position: relative;
+	        font-size: .65em;
+	    }
+	    
+	    .title {
+	       top: -21px;
+	       position: relative;
+	       float:left;
+	    }
+	    
+	    .navigation {
+		    top: -35px;
+		    position: relative;
+		    clear: both;
+		    float: left;
+	               
+	        ul {
+	            list-style: none;
+	            display: inline-block;
+	            
+	            li {
+	                float: left;
+	                padding: 0 10px;
+	            }
+	            
+	            li.last {
+	                float:right;
+	            }
+	            
+	        }
+	    } 
 	}
 	
-	h2.name {
-	    font-size: 2em;
+	.section {
+	    width:  ~"calc(100% - 10px)";
+	    min-height: 300px;
 	}
+	
+	.footer {
+	    width:  ~"calc(100% - 10px)";   
+	    min-height: 25px;
+	    .wrapper {
+	        padding-left: 10px; 
+	    }
+	}    
 }
+
+
 
 .ui-tabs-anchor:focus {
     outline: none;
