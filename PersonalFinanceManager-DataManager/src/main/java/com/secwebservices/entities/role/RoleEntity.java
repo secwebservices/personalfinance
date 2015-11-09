@@ -8,18 +8,21 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import com.secwebservices.entities.user.UserEntity;
 
 @Entity
-@Table(name="role")
+@Table(name="role", schema="public")
 public class RoleEntity {
 	
 	@Id
-	@GeneratedValue
+    @GeneratedValue(generator = "role_role_id_seq",  strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "role_role_id_seq", sequenceName = "role_role_id_seq", schema = "public")
 	@Column(name = "role_id")
 	private Integer roleId;
 

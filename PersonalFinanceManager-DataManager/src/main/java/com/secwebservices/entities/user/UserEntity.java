@@ -14,18 +14,20 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import com.secwebservices.entities.account.AccountEntity;
 import com.secwebservices.entities.role.RoleEntity;
 
 @Entity
-@Table(name = "user")
+@Table(name = "user", schema="public")
 public class UserEntity {
 
     @Id
     @Column(name = "user_id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "user_user_id_seq",  strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "user_user_id_seq", sequenceName = "user_user_id_seq", schema = "public")
     private Integer userId;
 
     @Column(name = "username", length = 128)

@@ -5,15 +5,18 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="account")
+@Table(name="account", schema = "public")
 public class AccountEntity {
 	
 	@Id
-	@GeneratedValue
+    @GeneratedValue(generator = "account_account_id_seq",  strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "account_account_id_seq", sequenceName = "account_account_id_seq", schema = "public")
 	@Column(name = "account_id")
 	private Integer accountId;
 
