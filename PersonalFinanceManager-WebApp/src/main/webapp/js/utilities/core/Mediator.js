@@ -1,9 +1,9 @@
-/*global define, $*/
+/*jslint browser: true, devel: true */
 
 /**
  * @author Robert “The Man” Suppenbach
  */
-define(['core/config/LoggerConfig'], function (LoggerConfig) {
+define(['jquery', 'LoggerConfig'], function ($, LoggerConfig) {
     'use strict';
     var instance;
     function init() {

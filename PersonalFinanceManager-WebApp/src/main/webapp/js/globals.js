@@ -1,7 +1,6 @@
-/* jslint browser: true, devel: true, unparam: true, eval: true */
-/*global define, window, $ */
+/*jslint browser: true, devel: true, unparam: true, evil: true, laxbreak: true */
 
-define(['modules/knockout/build/output/knockout-latest', 'core/config/LoggerConfig'], function(ko, LoggerConfig){
+define(['jquery', 'LoggerConfig'], function($, LoggerConfig){
     var logger = new LoggerConfig().getLogger('globals.js'),
     Globals = {
         uiThemes: [
@@ -43,10 +42,6 @@ define(['modules/knockout/build/output/knockout-latest', 'core/config/LoggerConf
 
         return false;
     };
-
-    window.onbeforeunload = function(e) {
-        return 'Really....';
-    }; 
     
     return Globals;
 });

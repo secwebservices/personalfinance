@@ -1,6 +1,8 @@
-/*global define, $, window*/
-define(['modules/knockout/build/output/knockout-latest',
-         'core/config/LoggerConfig'], function (ko, LoggerConfig) {
+/*jslint browser: true, devel: true */
+
+define(['jquery',
+        'knockoutjs',
+        'LoggerConfig'], function ($, ko, LoggerConfig) {
     'use strict';
     
     var instance;

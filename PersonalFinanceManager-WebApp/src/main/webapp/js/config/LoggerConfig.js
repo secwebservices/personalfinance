@@ -1,4 +1,4 @@
-/*global define, window */
+/*jslint browser: true, devel: true */
 define([ "lib/log4javascript" ], function(log4javascript) {
     /**
      * @constructor
@@ -8,7 +8,7 @@ define([ "lib/log4javascript" ], function(log4javascript) {
         var self = this;
         
         if(loglevel === undefined){
-            self.logLevel = log4javascript.Level.INFO;
+            self.logLevel = log4javascript.Level.TRACE;
         }
         if(loglevel === 'TRACE'){
             self.logLevel = log4javascript.Level.TRACE;

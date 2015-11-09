@@ -11,8 +11,7 @@
   "dependencies": {
       "knockout": "^3.3.0",
       "requirejs": "^2.1.20",
-      "jquery": "^2.1.4",
-      "jquery-ui": "^1.10.5"
+      "sammy": "^0.7.6" 
   },
   "devDependencies": {
     "grunt": "^0.4.5",
