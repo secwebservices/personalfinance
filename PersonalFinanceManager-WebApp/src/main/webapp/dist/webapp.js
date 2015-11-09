@@ -17779,6 +17779,10 @@ var log4javascript = (function() {
 
 define('lib/log4javascript',[], function () { return log4javascript; } );
 /*jslint browser: true, devel: true */
+
+/**
+ * @author Robert “The Man” Suppenbach
+ */
 define('LoggerConfig',[ "lib/log4javascript" ], function(log4javascript) {
     /**
      * @constructor
@@ -17871,6 +17875,9 @@ define('LoggerConfig',[ "lib/log4javascript" ], function(log4javascript) {
 });
 /*jslint browser: true, devel: true, unparam: true, evil: true, laxbreak: true */
 
+/**
+ * @author Robert “The Man” Suppenbach
+ */
 define('core/globals',['jquery', 'LoggerConfig'], function($, LoggerConfig){
     var logger = new LoggerConfig().getLogger('globals.js'),
     Globals = {
@@ -34651,8 +34658,12 @@ var tooltip = $.widget( "ui.tooltip", {
 }));
 /*jslint browser: true, devel: true, unparam: true, evil: true, laxbreak: true */
 
-define('utilities/knockout/bindinghandlers',['knockoutjs', 'LoggerConfig', 'jquery', 'jquery-ui'], function(ko, LoggerConfig, $) {
-    var existingBindingProvider, logger = new LoggerConfig().getLogger('bindinghandlers.js');
+/**
+ * @author Robert “The Man” Suppenbach
+ */
+define('utilities/knockout/BindingHandlers',['knockoutjs', 'LoggerConfig', 'jquery', 'jquery-ui'], function(ko, LoggerConfig, $) {
+    var existingBindingProvider, logger = new LoggerConfig().getLogger('BindingHandlers.js');
+    
     ko.bindingHandlers.selectedText = {
         init : function(element, valueAccessor, allBindings) {
             var value = valueAccessor(), options = allBindings().options;
@@ -34712,6 +34723,10 @@ define('utilities/knockout/bindinghandlers',['knockoutjs', 'LoggerConfig', 'jque
             }
         }
     };
+    
+    /**
+     * spinner
+     */
     ko.bindingHandlers.spinner = {
         update : function(element, valueAccessor, allBindings) {
             var options = ko.utils.unwrapObservable(ko.toJS(valueAccessor())) || {};
@@ -34796,6 +34811,9 @@ define('utilities/knockout/bindinghandlers',['knockoutjs', 'LoggerConfig', 'jque
         }
     };
 
+    /**
+     * accordion
+     */
     ko.bindingHandlers.accordion = {
         init : function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
             var options = ko.utils.unwrapObservable(ko.toJS(valueAccessor())) || {}, watchFunc, watched = [], w, watchers = [], watchIt;
@@ -34852,6 +34870,9 @@ define('utilities/knockout/bindinghandlers',['knockoutjs', 'LoggerConfig', 'jque
         }
     };
 
+    /**
+     * fileUpload
+     */
     ko.bindingHandlers.fileUpload = {
         init : function(element, valueAccessor, allBindingsAccessor) {
             var fileInput = valueAccessor(), allBindings = allBindingsAccessor(), files = [
@@ -34906,200 +34927,6 @@ define('utilities/knockout/bindinghandlers',['knockoutjs', 'LoggerConfig', 'jque
         }
     };
 
-    ko.bindingHandlers.sortableGroups = {
-        "init" : function(element, valueAccessor, allBindingsAccessor) {
-            var setup, config = valueAccessor(), allBindings, value, sub;
-            function disposal() {
-                sub.dispose();
-                $(element).sortable("destroy");
-
-            }
-            function update() {
-                setTimeout(function() {
-                    $(element).sortable("destroy");
-                    setup();
-                }, 1);
-            }
-            setup = function() {
-                try {
-                    $(element).sortable({
-                        "handle" : ".ui-accordion-header",
-                        "placeholder" : "ui-state-highlight",
-                        "forcePlaceholderSize" : true
-                    }).bind(
-                            'sortupdate',
-                            function(event, ui) {
-                                setTimeout(function() {
-                                    var order = [];
-                                    if ( $(element).find(ui) ) {
-                                        $(element).children('.ui-accordion').each(
-                                                function(x, el) {
-                                                    logger.info("Adding data-sortname to order listing");
-                                                    order.push($(el).find('.ui-accordion-header').first().attr(
-                                                            'data-sortname'));
-                                                });
-                                        console.debug("Identified sort order", order);
-                                        $(element).children('.ui-accordion').each(function(el) {
-                                            ko.utils.domNodeDisposal.removeDisposeCallback(el, update);
-                                        });
-                                        setTimeout(function() {
-                                            value.sort(function(a, b) {
-                                                var ret = 1;
-                                                if ( order.indexOf(a.name()) < 0 ) {
-                                                    console.warn("Could not find index of element name:", a
-                                                            .name());
-                                                }
-                                                if ( order.indexOf(b.name()) < 0 ) {
-                                                    console.warn("Could not find index of element name:", b
-                                                            .name());
-                                                }
-                                                if ( order.indexOf(a.name()) < order.indexOf(b.name()) ) {
-                                                    ret = -1;
-                                                }
-                                                return ret;
-                                            });
-                                            App.update();
-                                        }, 1);
-                                    }
-                                }, 1);
-                            });
-                    $(element).children('.ui-accordion').each(function(el) {
-                        ko.utils.domNodeDisposal.addDisposeCallback(el, update);
-                    });
-                } catch (e) {
-                    console.error("Error in sortableEntries", e.message, e.stack, e);
-                }
-            };
-            if ( config ) {
-                allBindings = allBindingsAccessor();
-                value = allBindings.foreach || allBindings.template.foreach;
-                if ( value ) {
-                    sub = value.subscribe(update);
-                    ko.utils.domNodeDisposal.addDisposeCallback(element, disposal);
-                    setup();
-                }
-            }
-        }
-    };
-
-    ko.bindingHandlers.sortableDataPoints = {
-        "init" : function(element, valueAccessor, allBindingsAccessor) {
-            var setup, config = valueAccessor(), allBindings, value, sub;
-            function disposal() {
-                sub.dispose();
-                $(element).sortable("destroy");
-
-            }
-            function update() {
-                setTimeout(function() {
-                    $(element).sortable("destroy");
-                    setup();
-                }, 1);
-            }
-            setup = function() {
-                try {
-                    $(element).sortable({
-                        "handle" : ".ui-accordion-header",
-                        "placeholder" : "ui-state-highlight",
-                        "forcePlaceholderSize" : true
-                    }).bind(
-                            'sortupdate',
-                            function(event, ui) {
-                                setTimeout(function() {
-                                    var order = [];
-                                    if ( $(element).find(ui) ) {
-                                        $(element).children('.ui-accordion').each(
-                                                function(x, el) {
-                                                    logger.info("Adding data-sortname to order listing");
-                                                    order.push($(el).find('.ui-accordion-header').first().attr(
-                                                            'data-sortname'));
-                                                });
-                                        console.debug("Identified sort order", order);
-                                        $(element).children('.ui-accordion').each(function(el) {
-                                            ko.utils.domNodeDisposal.removeDisposeCallback(el, update);
-                                        });
-                                        setTimeout(function() {
-                                            value.sort(function(a, b) {
-                                                var ret = 1;
-                                                if ( order.indexOf(a.cellReference()) < 0 ) {
-                                                    console.warn("Could not find index of element name:", a
-                                                            .cellReference());
-                                                }
-                                                if ( order.indexOf(b.cellReference()) < 0 ) {
-                                                    console.warn("Could not find index of element name:", b
-                                                            .cellReference());
-                                                }
-                                                if ( order.indexOf(a.cellReference()) < order.indexOf(b
-                                                        .cellReference()) ) {
-                                                    ret = -1;
-                                                }
-                                                return ret;
-                                            });
-                                            App.update();
-                                        }, 1);
-                                    }
-                                }, 1);
-                            });
-                    $(element).children('.ui-accordion').each(function(el) {
-                        ko.utils.domNodeDisposal.addDisposeCallback(el, update);
-                    });
-                } catch (e) {
-                    console.error("Error in sortableEntries", e.message, e.stack, e);
-                }
-            };
-            if ( config ) {
-                allBindings = allBindingsAccessor();
-                value = allBindings.foreach || allBindings.template.foreach;
-                if ( value ) {
-                    sub = value.subscribe(update);
-                    ko.utils.domNodeDisposal.addDisposeCallback(element, disposal);
-                    setup();
-                }
-            }
-        }
-    };
-
-    ko.bindingHandlers.foreachprop = {
-        transformObject : function(obj) {
-            var key, properties = [];
-            for ( key in obj ) {
-                if ( obj.hasOwnProperty(key) ) {
-                    properties.push({
-                        key : key,
-                        value : obj[key]
-                    });
-                }
-            }
-            return properties;
-        },
-        init : function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-            var sub, value = ko.utils.unwrapObservable(valueAccessor()), properties = ko
-                    .observableArray(ko.bindingHandlers.foreachprop.transformObject(value));
-            function update() {
-                try {
-                    value = ko.utils.unwrapObservable(valueAccessor());
-                    properties(ko.bindingHandlers.foreachprop.transformObject(value));
-                } catch (e) {
-                    console.error("Error in foreachprop binding", e.message, e.stack, e);
-                }
-            }
-            ko.applyBindingsToNode(element, {
-                foreach : properties
-            }, bindingContext);
-            try {
-                sub = valueAccessor().subscribe(update);
-                ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
-                    sub.dispose();
-                });
-            } catch (e) {
-                console.error("Error in foreachprop binding", e.message, e.stack, e);
-            }
-            return {
-                controlsDescendantBindings : true
-            };
-        }
-    };
-
     ko.bindingHandlers.menu = {
         init : function(element, valueAccessor) {
             var options = ko.utils.unwrapObservable(ko.toJS(valueAccessor())) || {};
@@ -35117,6 +34944,34 @@ define('utilities/knockout/bindinghandlers',['knockoutjs', 'LoggerConfig', 'jque
         }
     };
 
+    existingBindingProvider = ko.bindingProvider.instance;
+
+    /**
+     * bindingProvider Logs binding errors
+     */
+    ko.bindingProvider.instance = {
+        nodeHasBindings : existingBindingProvider.nodeHasBindings,
+        getBindings : function(node, bindingContext) {
+            var bindings;
+            try {
+                bindings = existingBindingProvider.getBindings(node, bindingContext);
+            } catch (ex) {
+                logger.info("Binding Error", node, ex.message, ex.stack);
+            }
+
+            return bindings;
+        }
+    };
+
+});
+/*jslint browser: true, devel: true, unparam: true, evil: true, laxbreak: true */
+
+/**
+ * @author Robert “The Man” Suppenbach
+ */
+define('utilities/knockout/KnockoutExtensions',['knockoutjs', 'LoggerConfig', 'jquery', 'jquery-ui'], function(ko, LoggerConfig, $) {
+    var logger = new LoggerConfig().getLogger('KnockoutExtensions.js');
+    
     ko.extenders.numeric = function(target, precision) {
         // create a writeable computed observable to intercept writes to our observable
         var result = ko
@@ -35151,25 +35006,6 @@ define('utilities/knockout/bindinghandlers',['knockoutjs', 'LoggerConfig', 'jque
 
         // return the new computed observable
         return result;
-    };
-
-    existingBindingProvider = ko.bindingProvider.instance;
-
-    /**
-     * bindingProvider Logs binding errors
-     */
-    ko.bindingProvider.instance = {
-        nodeHasBindings : existingBindingProvider.nodeHasBindings,
-        getBindings : function(node, bindingContext) {
-            var bindings;
-            try {
-                bindings = existingBindingProvider.getBindings(node, bindingContext);
-            } catch (ex) {
-                logger.info("Binding Error", node, ex.message, ex.stack);
-            }
-
-            return bindings;
-        }
     };
 
 });
@@ -35336,6 +35172,9 @@ define('Mediator',['jquery', 'LoggerConfig'], function ($, LoggerConfig) {
 });
 /*jslint browser: true, devel: true */
 
+/**
+ * @author Robert “The Man” Suppenbach
+ */
 define('managers/TemplateManager',['jquery',
         'knockoutjs',
         'LoggerConfig'], function ($, ko, LoggerConfig) {
@@ -35549,6 +35388,7 @@ define('managers/TemplateManager',['jquery',
          * loadTemplate(templateName)
          * 
          * loads in the HTML for a specific template (lazy loading)
+         * does not report to AJAX global callback
          */
         function loadTemplate(templateName) {
             var template, context = _config.context;
@@ -35559,6 +35399,7 @@ define('managers/TemplateManager',['jquery',
                 $.ajax(template.path, {
                     cache:false,
                     async:false,
+                    global: false,
                     success: function(html, status, jqXHR){
                         templateName = template.name;
                         
@@ -35671,6 +35512,10 @@ define('managers/TemplateManager',['jquery',
 });
 
 /*jslint browser: true, devel: true */
+
+/**
+ * @author Robert “The Man” Suppenbach
+ */
 define('utilities/core/AjaxHandlers',['jquery',
         'knockoutjs',
         'LoggerConfig',
@@ -35827,6 +35672,9 @@ define('utilities/core/AjaxHandlers',['jquery',
 });
 /*jslint browser: true, devel: true */
 
+/**
+ * @author Robert “The Man” Suppenbach
+ */
 define('model/IndexModel',['LoggerConfig',
         'Mediator'], function(LoggerConfig, Mediator) {
 
@@ -35863,6 +35711,9 @@ define('model/IndexModel',['LoggerConfig',
 });
 /*jslint browser: true, devel: true */
 
+/**
+ * @author Robert “The Man” Suppenbach
+ */
 define('view/IndexView',['model/IndexModel', 
         'knockoutjs',
         'LoggerConfig',
@@ -35951,6 +35802,9 @@ define('view/IndexView',['model/IndexModel',
 });
 /*jslint browser: true, devel: true */
 
+/**
+ * @author Robert “The Man” Suppenbach
+ */
 define('model/user/UserModel',['LoggerConfig',
         'Mediator', 
         'knockoutjs'], function(LoggerConfig, Mediator, ko) {
@@ -36008,6 +35862,9 @@ define('model/user/UserModel',['LoggerConfig',
 });
 /*jslint browser: true, devel: true */
 
+/**
+ * @author Robert “The Man” Suppenbach
+ */
 define('view/user/UserView',['model/user/UserModel', 
         'knockoutjs',
         'LoggerConfig',
@@ -38307,6 +38164,10 @@ define('controller/RouteController',[
 });
 /* jslint browser: true, devel: true, unparam: true, eval: true */
 
+/**
+ * @author Robert “The Man” Suppenbach
+ */
+
 define('controller/user/UserController',['jquery',
         'knockoutjs', 
         'LoggerConfig', 
@@ -38385,6 +38246,9 @@ define('controller/user/UserController',['jquery',
     
 /*jslint browser: true, devel: true, unparam: true, evil: true */
 
+/**
+ * @author Robert “The Man” Suppenbach
+ */
 define('core/pfmain',[ 'jquery',
          'knockoutjs',	
          'LoggerConfig',
@@ -38481,7 +38345,16 @@ define('core/pfmain',[ 'jquery',
 /* jslint browser: true, devel: true, unparam: true, eval: true */
 // For any third party dependencies, like jQuery, place them in the lib folder.
 
-require(['jquery', 'core/globals', 'utilities/knockout/bindinghandlers', 'core/pfmain']);
+/**
+ * @author Robert “The Man” Suppenbach
+ */
+require([
+     'jquery', 
+     'core/globals', 
+     'utilities/knockout/BindingHandlers', 
+     'utilities/knockout/KnockoutExtensions', 
+     'core/pfmain'
+]);
 define("pfapp.js", function(){});
 
 /*!

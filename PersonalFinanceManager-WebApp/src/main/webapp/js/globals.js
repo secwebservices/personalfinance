@@ -1,5 +1,8 @@
 /*jslint browser: true, devel: true, unparam: true, evil: true, laxbreak: true */
 
+/**
+ * @author Robert “The Man” Suppenbach
+ */
 define(['jquery', 'LoggerConfig'], function($, LoggerConfig){
     var logger = new LoggerConfig().getLogger('globals.js'),
     Globals = {

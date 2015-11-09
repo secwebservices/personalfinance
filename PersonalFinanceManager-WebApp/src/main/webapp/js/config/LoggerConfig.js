@@ -1,4 +1,8 @@
 /*jslint browser: true, devel: true */
+
+/**
+ * @author Robert “The Man” Suppenbach
+ */
 define([ "lib/log4javascript" ], function(log4javascript) {
     /**
      * @constructor

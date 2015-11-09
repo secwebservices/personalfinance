@@ -1,5 +1,8 @@
 /*jslint browser: true, devel: true */
 
+/**
+ * @author Robert “The Man” Suppenbach
+ */
 define(['model/IndexModel', 
         'knockoutjs',
         'LoggerConfig',

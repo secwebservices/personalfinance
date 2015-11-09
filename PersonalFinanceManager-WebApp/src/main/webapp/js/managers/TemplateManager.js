@@ -1,5 +1,8 @@
 /*jslint browser: true, devel: true */
 
+/**
+ * @author Robert “The Man” Suppenbach
+ */
 define(['jquery',
         'knockoutjs',
         'LoggerConfig'], function ($, ko, LoggerConfig) {
@@ -213,6 +216,7 @@ define(['jquery',
          * loadTemplate(templateName)
          * 
          * loads in the HTML for a specific template (lazy loading)
+         * does not report to AJAX global callback
          */
         function loadTemplate(templateName) {
             var template, context = _config.context;
@@ -223,6 +227,7 @@ define(['jquery',
                 $.ajax(template.path, {
                     cache:false,
                     async:false,
+                    global: false,
                     success: function(html, status, jqXHR){
                         templateName = template.name;
                         

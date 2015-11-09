@@ -1,4 +1,8 @@
 /*jslint browser: true, devel: true */
+
+/**
+ * @author Robert “The Man” Suppenbach
+ */
 define(['jquery',
         'knockoutjs',
         'LoggerConfig',
