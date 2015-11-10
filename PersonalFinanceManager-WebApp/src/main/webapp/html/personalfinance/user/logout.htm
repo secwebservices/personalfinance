@@ -3,9 +3,10 @@
         <div id="logout_error" class="ui-state-error ui-corner-all" style="display:none;"></div>     
     </div>
     <form class="edit-form login-form" data-bind="submit: doLogout">
-        Sure?
+        <p>Are you sure you wish to logout?</p>
         <div class="buttonLine">
-            <input type="submit" value="Logout" data-bind="button:{}"/>
+            <a href="#dashboard" data-bind="button:{}">No</a>
+            <input type="submit" value="Yes" data-bind="button:{}"/>
         </div>
     </form>
 </div>

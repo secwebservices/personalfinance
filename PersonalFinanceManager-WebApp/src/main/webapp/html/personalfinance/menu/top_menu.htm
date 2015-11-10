@@ -1,8 +1,11 @@
-<ul data-bind="menu: {}">
+<ul style="width: 99%">
     <!-- ko ifnot: user -->
-    <li class="last"><a href="#login">Login</a></li>
+	    <li class="last"><a href="#login">Login</a></li>
     <!-- /ko -->
     <!-- ko if: user -->
-    <li class="last"><a href="#logout">Logout</a></li>
+        <li><a href="#dashboard">Dashboard</a></li>
+	    <li><a href="#account">Account</a></li>
+	    <li><a href="#help">Help</a></li>
+	    <li class="last"><a href="#logout">Logout</a></li>
     <!-- /ko -->    
 </ul>

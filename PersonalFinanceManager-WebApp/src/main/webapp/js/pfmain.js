@@ -9,8 +9,9 @@ define([ 'jquery',
          'Mediator',
          'managers/TemplateManager',
          'utilities/core/AjaxHandlers',
-         'view/IndexView',
-         'controller/user/UserController'
+         'controller/user/UserController',
+         'controller/user/DashboardController',
+         'controller/RouteController'
          ], function(
         		 $,
         		 ko,
@@ -18,13 +19,15 @@ define([ 'jquery',
                  Mediator,
                  TemplateManager,
                  AjaxHandlers,
-                 IndexView,
-                 UserController
+                 UserController,
+                 DashboardController,
+                 RouteController
                  ) {
 	
     var App = {
             "logger": undefined,
-            "financemanager": ko.observable({
+            "applicationContext": ko.observable({
+            	"servertime": ko.observable(),
             	"user": ko.observable(undefined),
             	"uiTheme": ko.observable("start"),
             	"uiThemes": uiThemes
@@ -32,29 +35,25 @@ define([ 'jquery',
             "load" : function(){
                 // Load Configuration form LocalStorage
                 var store = localStorage.PersonalFinanceManager_store, template, vm, box,
-                themeStore = localStorage.PersonalFinanceManager_theme, indexView, userController,
-                d, ts;
+                themeStore = localStorage.PersonalFinanceManager_theme, indexView, 
+                dashboardController, userController, d, ts;
 
                 if(themeStore){
-                    App.financemanager().uiTheme(themeStore);
+                    App.applicationContext().uiTheme(themeStore);
                 }     
-                
-                indexView = new IndexView({
-                    /** the element to render the view on. */
-                    element : '.viewpoint',
-                    templateManager : TemplateManager
+
+                dashboardController = new DashboardController({
+                	templateManager : TemplateManager,
+                	applicationContext: App.applicationContext
                 });
-
-
+                
                 userController = new UserController({
                 	templateManager : TemplateManager,
-                	user: App.financemanager().user
+                	applicationContext: App.applicationContext
                 });
-                
-                setTimeout(function(){
-                    Mediator.publish({channel:'PF-Render', view: 'IndexView'});                	
-                }, 10);
                                 
+            	RouteController.router.run('#welcome');
+                
                 setInterval(function() {
                     d = new Date();
                     ts = d.getTime();
@@ -69,7 +68,7 @@ define([ 'jquery',
             App.logger = new LoggerConfig().getLogger('pfmain.js');
             App.logger.info("Initializing Application Layer");
             
-            App.financemanager().uiTheme.subscribe(function(value){
+            App.applicationContext().uiTheme.subscribe(function(value){
                 localStorage.PersonalFinanceManager_theme = value;
             });
                         
@@ -80,7 +79,7 @@ define([ 'jquery',
                 callback: function(){
                     setTimeout(function() {
                         // Apply bindings
-                        ko.applyBindings(App.financemanager, document.getElementById("htmlTop"));
+                        ko.applyBindings(App.applicationContext, document.getElementById("htmlTop"));
 
                         App.load();
                     }, 15);

@@ -77,8 +77,6 @@ define(['model/IndexModel',
 
             ko.cleanNode($el[0]);
             ko.applyBindings(indexModel, $el[0]);
-
-            Mediator.publish("PF-Ready", {});
         } catch (e) {
             self.logger.error('IndexView.prototype.render', e);
         }

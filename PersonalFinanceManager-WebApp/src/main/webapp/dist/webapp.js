@@ -35675,136 +35675,6 @@ define('utilities/core/AjaxHandlers',['jquery',
 /**
  * @author Robert “The Man” Suppenbach
  */
-define('model/IndexModel',['LoggerConfig',
-        'Mediator'], function(LoggerConfig, Mediator) {
-
-    /**
-     * @constructor
-     */
-    function IndexModel(config) {
-    	var self = this;
-    	self.logger = new LoggerConfig().getLogger('IndexModel.js'); 
-    	
-    	if(config){
-        	self.initialize(config);    		
-    	}
-    }
-
-    IndexModel.prototype.logger = undefined;
-
-    IndexModel.prototype.initialize = function (config) {
-        var self = this, c, options = $.extend({}, config);
-        
-        self.logger.info('IndexModel Initialize');
-        
-        for (c in options) {
-            if (options.hasOwnProperty(c) && typeof self[c] === 'function') {
-                self[c](options[c]);
-            }else if (options.hasOwnProperty(c)){
-                self[c] = options[c];
-            }
-        }
-    };
-    
-    // Return the function
-    return IndexModel;
-});
-/*jslint browser: true, devel: true */
-
-/**
- * @author Robert “The Man” Suppenbach
- */
-define('view/IndexView',['model/IndexModel', 
-        'knockoutjs',
-        'LoggerConfig',
-        'Mediator'], 
-        function(IndexModel, ko, LoggerConfig, Mediator) {
-
-    /**
-     * @constructor
-     */
-    function IndexView(config) {
-    	var self = this;
-    	self.logger = new LoggerConfig().getLogger('IndexView.js'); 
-
-        self.initialize(config);
-    }
-    
-    /**
-     * @param logger {object}
-     */
-    IndexView.prototype.logger = undefined;
-    /**
-     * @param element {object}
-     */
-    IndexView.prototype.element = undefined;
-    /**
-     * @param template {object}
-     */
-    IndexView.prototype.templateManager = undefined;
-
-    IndexView.prototype.initialize = function (config) {
-        var self = this, c, options = $.extend({}, config);
-        
-        self.logger.info('IndexView Initialize');
-        
-        for (c in options) {
-            if (options.hasOwnProperty(c) && typeof self[c] === 'function') {
-                self[c](options[c]);
-            }else if (options.hasOwnProperty(c)){
-                self[c] = options[c];
-            }
-        }
-        
-        Mediator.subscribe({
-        	channel:'PF-Render', 
-        	callback: function(message){
-        		if(message.view === 'IndexView'){
-        			self.render(); 
-        		}
-        	},
-        	context: self
-    	});
-    };
-    
-    /**
-     * render the view
-     * 
-     * @returns {object}
-     */
-    IndexView.prototype.render = function() {
-        var self = this, indexModel, $el, templateData;
-
-        self.logger.debug("IndexView.prototype.render");
-
-        try {
-            $el = $(self.element);
-            
-            templateData = self.templateManager.getTemplate('Index');
-            
-            $el.html(templateData);
-
-            indexModel = new IndexModel();
-
-            ko.cleanNode($el[0]);
-            ko.applyBindings(indexModel, $el[0]);
-
-            Mediator.publish("PF-Ready", {});
-        } catch (e) {
-            self.logger.error('IndexView.prototype.render', e);
-        }
-
-    };
-
-    // Return the function
-    return IndexView;
-
-});
-/*jslint browser: true, devel: true */
-
-/**
- * @author Robert “The Man” Suppenbach
- */
 define('model/user/UserModel',['LoggerConfig',
         'Mediator', 
         'knockoutjs'], function(LoggerConfig, Mediator, ko) {
@@ -36022,7 +35892,7 @@ define('view/user/UserLogoutView',['model/user/UserModel',
      * @returns {object}
      */
     UserLogoutView.prototype.render = function() {
-        var self = this, userModel, $el, templateData;
+        var self = this, userModel = {}, $el, templateData;
 
         self.logger.debug("UserLogoutView.prototype.render");
 
@@ -36032,16 +35902,10 @@ define('view/user/UserLogoutView',['model/user/UserModel',
             templateData = self.templateManager.getTemplate('logout');
 
             $el.html(templateData);
-
-            userModel = new UserModel(ko.toJS(self.user));
             
             $.extend(userModel, {
             	doLogout: function(){
-            		var loginRequest = {
-						username: userModel.username()
-			    	};
-            		
-            		Mediator.publish({channel: 'PF-Login-Request', logoutRequest: logoutRequest});
+            		Mediator.publish({channel: 'PF-Logout-Request'});
             	}
             });
 
@@ -38232,22 +38096,12 @@ define('controller/RouteController',[
      function init(){
     	 var router = new Sammy(), logger = new LoggerConfig().getLogger('RouteController.js');
     	 
-    	 
-    	 function addRoute(data){
-    		 logger.debug(JSON.stringify(data));
-    		 router.route(data.method, data.path, data.callback);
-    	 }
-
-    	 function removeRoute(data){
-    		 //TODO get this working
-    	 }
-    	 
-    	 
-    	 router.run('#/');
+    	 router.notFound = function(verb, path) {
+             logger.debug("Route not found", verb, path);
+         };
     	 
          return {
-             "addRoute": addRoute,
-             "removeRoute": removeRoute
+             router : router
          };
      }
      
@@ -38268,9 +38122,10 @@ define('controller/RouteController',[
 define('controller/user/UserController',['jquery',
         'knockoutjs', 
         'LoggerConfig', 
+        'Mediator',
         'view/user/UserLoginView',
         'view/user/UserLogoutView',
-        'controller/RouteController'], function($, ko, LoggerConfig, UserLoginView, UserLogoutView, RouteController){
+        'controller/RouteController'], function($, ko, LoggerConfig, Nediator, UserLoginView, UserLogoutView, RouteController){
 	
     function UserController(config){
     	var self = this, userLoginView, userLogoutView;
@@ -38284,7 +38139,7 @@ define('controller/user/UserController',['jquery',
             user: config.user
         });
 
-        userLogoutView = new UserLoginView({
+        userLogoutView = new UserLogoutView({
             /** the element to render the view on. */
             element : '.viewpoint',
             templateManager : config.templateManager,
@@ -38305,8 +38160,24 @@ define('controller/user/UserController',['jquery',
     
     UserController.prototype.logger = undefined;
     
+    UserController.prototype.applicationContext = undefined;
+    
     UserController.prototype.user = undefined;
 
+    UserController.prototype.userLoggedIn = undefined;
+    
+    UserController.prototype.userSessionHasTimedout = false;
+
+    UserController.prototype.timeleft = 60;
+    
+    UserController.prototype.heatbeatcounter = 1;
+    
+    UserController.prototype.userStore = sessionStorage;
+
+    UserController.prototype.sessionDialog = undefined;
+    
+    UserController.prototype.timeoutInterval = undefined;
+    
     UserController.prototype.loginRequest = function(message){
     	var self = this, loginRequest = message.loginRequest;
     	
@@ -38317,7 +38188,10 @@ define('controller/user/UserController',['jquery',
 		    data: JSON.stringify(loginRequest),
 		    success: function(data, status, request){
 				self.logger.debug('Login Request', status);
+				self.userStore.setItem('user', JSON.stringify(data));
 				self.user(data);
+				self.userLoggedIn = true;
+				self.timeleft = 60;
 				if(status === 'success'){
 			    	Mediator.publish({channel: 'PF-Login-Success'});					
 				}
@@ -38326,27 +38200,30 @@ define('controller/user/UserController',['jquery',
 		});
     };
     
-    UserController.prototype.logoutRequest = function(message){
-    	var self = this, logoutRequest = message.logoutRequest;
-    	
+    UserController.prototype.logoutRequest = function(){
+    	var self = this;
+
     	$.ajax({
-		    type: "POST",
-		    contentType: 'application/json',
+		    type: "GET",
 		    url: '/api/user/logout',
-		    data: JSON.stringify(logoutRequest),
 		    success: function(data, status, request){
 				self.logger.debug('Logout Request', status);
+				self.userStore.removeItem('user');
 				self.user(undefined);
+				self.userLoggedIn = false;
+				self.timeleft = 60;
+				
 				if(status === 'success'){
 					Mediator.publish({channel: 'PF-Logout-Success'});					
 				}
 		    },
 		    dataType: 'json'
 		});
+    	
     };    
     
     UserController.prototype.initialize = function (config) {
-        var self = this, c, options = $.extend({}, config);
+        var self = this, c, options = $.extend({}, config), user;
         
         self.logger.info('UserController Initialize');
         
@@ -38357,25 +38234,446 @@ define('controller/user/UserController',['jquery',
                 self[c] = options[c];
             }
         }
-        
-        RouteController.addRoute({
-        	method: 'get', 
-        	path: '#login', 
-        	callback: function(){
+              
+        RouteController.router.route('get', '#login', 
+        	function(){
         		Mediator.publish({channel: 'PF-Render', view: 'UserLoginView'});	
         	}
-        });
+        );
         
-        RouteController.addRoute({
-        	method: 'get', 
-        	path: '#logout', 
-        	callback: function(){
+        RouteController.router.route('get', '#logout', 
+        	function(){
         		Mediator.publish({channel: 'PF-Render', view: 'UserLogoutView'});	
         	}
-        });        
+        );   
+        
+        Mediator.subscribe({channel: 'PF-Login-Success', callback: function(){
+        	window.location.hash = '#dashboard';
+        }});
+
+        Mediator.subscribe({channel: 'PF-Logout-Success', callback: function(){
+        	window.location.hash = '#welcome';
+        }});
+
+        self.user = self.applicationContext().user;
+        
+        if(self.userStore.getItem('user')){
+        	user = JSON.parse(self.userStore.getItem('user'));
+        	self.user(user);
+        	self.userLoggedIn = true;
+        }
+        
+        Mediator.subscribe({channel: 'PF-Heartbeat', context: self, callback: self.serverHeartbeat});  
+        
+        $.ajax('/api/ping', {
+            cache:false,
+            async:false,
+            global: false,
+            success: function(data, status, jqXHR){
+            	self.applicationContext().servertime(data.timestamp);
+            },
+            dataType: 'json'
+        });
+        
+    };
+    
+    /**
+     * serverHeartbeat
+     * 
+     * @param data {object} format {timestamp : {integer}}
+     */
+    UserController.prototype.serverHeartbeat = function(data) {
+        var self = this, ts = data.message.timestamp, url, currentStatus;
+        
+        if (!self.userStore.getItem('user') && (self.user() && !self.userSessionHasTimedout)) {
+            self.sessionTimeout();
+        }
+
+        if (self.heatbeatcounter === 30) {
+            self.heatbeatcounter = 1;
+            url = '/api/ping?' + ts;
+
+            if (self.user()) {
+                url += "&user=" + ko.toJS(self.user);
+            }
+
+            $.ajax(url, {
+                cache:false,
+                async:false,
+                global: false,
+                success: function(data, status, jqXHR){
+
+                    self.applicationContext().servertime(data.timestamp);
+                	if(jqXHR.status == 401){
+                		self.sessionTimeout();
+                	}
+                },
+                error: function(jqXHR, status, error){
+                	self.userStore.removeItem('user');
+                },
+                dataType: 'json'
+            });  
+
+        } else {
+            self.heatbeatcounter++;
+        }
+    };
+    
+    /**
+     * sessionTimeout
+     */
+    UserController.prototype.sessionTimeout = function() {
+        var self = this;
+    	
+        self.userSessionHasTimedout = true;
+        self.logger.debug('UserController.prototype.sessionTimeout', self.user);
+
+        $('<div id="sessionTimeoutDialog">' + 
+        		'<p>Your session is about to time out.</br>Click Ok to logout, or cancel to stay logged in and continue<p>' +
+                '<span id="timeLeft">60</span> Second(s) until logout</div>').appendTo('body');
+        self.sessionDialog = $('#sessionTimeoutDialog').dialog(
+        {
+            title : 'Notification',
+            modal : true,
+            width : '420px',
+            position :
+            {
+                my : 'center',
+                at : 'center',
+                of : '.section'
+            },
+            buttons :
+            {
+                'Ok' : function() {
+                    self.logoutRequest();
+                    $(this).dialog('close');
+                },
+                'Cancel' : function() {
+                	self.userSessionHasTimedout = false;
+                	if(self.user){
+                    	self.userStore.setItem('user', JSON.stringify(ko.toJS(self.user)));                		
+                	}
+                    $(this).dialog('close');
+                }
+            },
+            close : function() {
+                $(this).dialog('destroy');
+                $('#sessionTimeoutDialog').remove();
+            },
+            open : function() {
+            	self.timeleft = 60;
+            	$('#timeLeft').html(self.timeleft);
+            	clearInterval(self.timeoutInterval);
+
+            	self.timeoutInterval = setInterval(function(){
+            		self.logoutTimer();
+        		}, 1000);  
+            }
+        });
+
+    };
+    
+    UserController.prototype.logoutTimer = function() {
+        var self = this;
+
+        self.timeleft += -1;
+        $('#timeLeft').html(self.timeleft);
+
+        if (self.timeleft === 0) {
+            self.sessionDialog.dialog('close');
+            self.logoutRequest();
+        }
     };
     
     return UserController;
+    
+});
+    
+    
+/*jslint browser: true, devel: true */
+
+/**
+ * @author Robert “The Man” Suppenbach
+ */
+define('model/IndexModel',['LoggerConfig',
+        'Mediator'], function(LoggerConfig, Mediator) {
+
+    /**
+     * @constructor
+     */
+    function IndexModel(config) {
+    	var self = this;
+    	self.logger = new LoggerConfig().getLogger('IndexModel.js'); 
+    	
+    	if(config){
+        	self.initialize(config);    		
+    	}
+    }
+
+    IndexModel.prototype.logger = undefined;
+
+    IndexModel.prototype.initialize = function (config) {
+        var self = this, c, options = $.extend({}, config);
+        
+        self.logger.info('IndexModel Initialize');
+        
+        for (c in options) {
+            if (options.hasOwnProperty(c) && typeof self[c] === 'function') {
+                self[c](options[c]);
+            }else if (options.hasOwnProperty(c)){
+                self[c] = options[c];
+            }
+        }
+    };
+    
+    // Return the function
+    return IndexModel;
+});
+/*jslint browser: true, devel: true */
+
+/**
+ * @author Robert “The Man” Suppenbach
+ */
+define('view/IndexView',['model/IndexModel', 
+        'knockoutjs',
+        'LoggerConfig',
+        'Mediator'], 
+        function(IndexModel, ko, LoggerConfig, Mediator) {
+
+    /**
+     * @constructor
+     */
+    function IndexView(config) {
+    	var self = this;
+    	self.logger = new LoggerConfig().getLogger('IndexView.js'); 
+
+        self.initialize(config);
+    }
+    
+    /**
+     * @param logger {object}
+     */
+    IndexView.prototype.logger = undefined;
+    /**
+     * @param element {object}
+     */
+    IndexView.prototype.element = undefined;
+    /**
+     * @param template {object}
+     */
+    IndexView.prototype.templateManager = undefined;
+
+    IndexView.prototype.initialize = function (config) {
+        var self = this, c, options = $.extend({}, config);
+        
+        self.logger.info('IndexView Initialize');
+        
+        for (c in options) {
+            if (options.hasOwnProperty(c) && typeof self[c] === 'function') {
+                self[c](options[c]);
+            }else if (options.hasOwnProperty(c)){
+                self[c] = options[c];
+            }
+        }
+        
+        Mediator.subscribe({
+        	channel:'PF-Render', 
+        	callback: function(message){
+        		if(message.view === 'IndexView'){
+        			self.render(); 
+        		}
+        	},
+        	context: self
+    	});
+    };
+    
+    /**
+     * render the view
+     * 
+     * @returns {object}
+     */
+    IndexView.prototype.render = function() {
+        var self = this, indexModel, $el, templateData;
+
+        self.logger.debug("IndexView.prototype.render");
+
+        try {
+            $el = $(self.element);
+            
+            templateData = self.templateManager.getTemplate('Index');
+            
+            $el.html(templateData);
+
+            indexModel = new IndexModel();
+
+            ko.cleanNode($el[0]);
+            ko.applyBindings(indexModel, $el[0]);
+        } catch (e) {
+            self.logger.error('IndexView.prototype.render', e);
+        }
+
+    };
+
+    // Return the function
+    return IndexView;
+
+});
+/*jslint browser: true, devel: true */
+
+/**
+ * @author Robert “The Man” Suppenbach
+ */
+define('view/DashboardView',[ 
+        'knockoutjs',
+        'LoggerConfig',
+        'Mediator'], 
+        function(ko, LoggerConfig, Mediator) {
+
+    /**
+     * @constructor
+     */
+    function DashboardView(config) {
+    	var self = this;
+    	self.logger = new LoggerConfig().getLogger('DashboardView.js'); 
+
+        self.initialize(config);
+    }
+    
+    /**
+     * @param logger {object}
+     */
+    DashboardView.prototype.logger = undefined;
+    /**
+     * @param element {object}
+     */
+    DashboardView.prototype.element = undefined;
+    /**
+     * @param template {object}
+     */
+    DashboardView.prototype.templateManager = undefined;
+    
+    DashboardView.prototype.applicationContext = undefined;
+
+    DashboardView.prototype.initialize = function (config) {
+        var self = this, c, options = $.extend({}, config);
+        
+        self.logger.info('DashboardView Initialize');
+        
+        for (c in options) {
+            if (options.hasOwnProperty(c) && typeof self[c] === 'function') {
+                self[c](options[c]);
+            }else if (options.hasOwnProperty(c)){
+                self[c] = options[c];
+            }
+        }
+        
+        Mediator.subscribe({
+        	channel:'PF-Render', 
+        	callback: function(message){
+        		if(message.view === 'DashboardView'){
+        			self.render(); 
+        		}
+        	},
+        	context: self
+    	});
+    };
+    
+    /**
+     * render the view
+     * 
+     * @returns {object}
+     */
+    DashboardView.prototype.render = function() {
+        var self = this, $el, templateData;
+
+        self.logger.debug("DashboardView.prototype.render");
+
+        try {
+            $el = $(self.element);
+            
+            templateData = self.templateManager.getTemplate('dashboard');
+            
+            $el.html(templateData);
+
+            ko.cleanNode($el[0]);
+            ko.applyBindings(self.applicationContext, $el[0]);
+        } catch (e) {
+            self.logger.error('DashboardView.prototype.render', e);
+        }
+
+    };
+
+    // Return the function
+    return DashboardView;
+
+});
+/* jslint browser: true, devel: true, unparam: true, eval: true */
+
+/**
+ * @author Robert “The Man” Suppenbach
+ */
+
+define('controller/user/DashboardController',['jquery',
+        'knockoutjs', 
+        'LoggerConfig', 
+        'Mediator',
+        'view/IndexView',
+        'view/DashboardView',
+        'controller/RouteController'], function($, ko, LoggerConfig, Mediator, IndexView, DashboardView, RouteController){
+	
+    function DashboardController(config){
+    	var self = this, indexView, dashboardView;
+    	
+    	self.logger = new LoggerConfig().getLogger('DashboardController.js');
+    	
+    	indexView = new IndexView({
+            /** the element to render the view on. */
+            element : '.viewpoint',
+            templateManager : config.templateManager
+        });
+
+    	dashboardView = new DashboardView({
+            /** the element to render the view on. */
+            element : '.viewpoint',
+            templateManager : config.templateManager,
+            applicationContext: self.applicationContext
+    	});
+        
+        self.initialize(config);
+    }
+    
+    DashboardController.prototype.logger = undefined;
+    
+    DashboardController.prototype.applicationContext = undefined;
+       
+    DashboardController.prototype.initialize = function (config) {
+        var self = this, c, options = $.extend({}, config), notFound;
+        
+        self.logger.info('DashboardController Initialize');
+        
+        for (c in options) {
+            if (options.hasOwnProperty(c) && typeof self[c] === 'function') {
+                self[c](options[c]);
+            }else if (options.hasOwnProperty(c)){
+                self[c] = options[c];
+            }
+        }
+    	
+        RouteController.router.route('get', '#welcome', 
+	    	function(){
+				Mediator.publish({channel: 'PF-Render', view: 'IndexView'});	
+	    	}
+	    );
+
+        RouteController.router.route('get', '#dashboard', 
+	    	function(){
+				Mediator.publish({channel: 'PF-Render', view: 'DashboardView'});	
+	    	}
+	    );
+                      
+    };
+    
+    return DashboardController;
     
 });
     
@@ -38391,8 +38689,9 @@ define('core/pfmain',[ 'jquery',
          'Mediator',
          'managers/TemplateManager',
          'utilities/core/AjaxHandlers',
-         'view/IndexView',
-         'controller/user/UserController'
+         'controller/user/UserController',
+         'controller/user/DashboardController',
+         'controller/RouteController'
          ], function(
         		 $,
         		 ko,
@@ -38400,13 +38699,15 @@ define('core/pfmain',[ 'jquery',
                  Mediator,
                  TemplateManager,
                  AjaxHandlers,
-                 IndexView,
-                 UserController
+                 UserController,
+                 DashboardController,
+                 RouteController
                  ) {
 	
     var App = {
             "logger": undefined,
-            "financemanager": ko.observable({
+            "applicationContext": ko.observable({
+            	"servertime": ko.observable(),
             	"user": ko.observable(undefined),
             	"uiTheme": ko.observable("start"),
             	"uiThemes": uiThemes
@@ -38414,29 +38715,25 @@ define('core/pfmain',[ 'jquery',
             "load" : function(){
                 // Load Configuration form LocalStorage
                 var store = localStorage.PersonalFinanceManager_store, template, vm, box,
-                themeStore = localStorage.PersonalFinanceManager_theme, indexView, userController,
-                d, ts;
+                themeStore = localStorage.PersonalFinanceManager_theme, indexView, 
+                dashboardController, userController, d, ts;
 
                 if(themeStore){
-                    App.financemanager().uiTheme(themeStore);
+                    App.applicationContext().uiTheme(themeStore);
                 }     
-                
-                indexView = new IndexView({
-                    /** the element to render the view on. */
-                    element : '.viewpoint',
-                    templateManager : TemplateManager
+
+                dashboardController = new DashboardController({
+                	templateManager : TemplateManager,
+                	applicationContext: App.applicationContext
                 });
-
-
+                
                 userController = new UserController({
                 	templateManager : TemplateManager,
-                	user: App.financemanager().user
+                	applicationContext: App.applicationContext
                 });
-                
-                setTimeout(function(){
-                    Mediator.publish({channel:'PF-Render', view: 'IndexView'});                	
-                }, 10);
                                 
+            	RouteController.router.run('#welcome');
+                
                 setInterval(function() {
                     d = new Date();
                     ts = d.getTime();
@@ -38451,7 +38748,7 @@ define('core/pfmain',[ 'jquery',
             App.logger = new LoggerConfig().getLogger('pfmain.js');
             App.logger.info("Initializing Application Layer");
             
-            App.financemanager().uiTheme.subscribe(function(value){
+            App.applicationContext().uiTheme.subscribe(function(value){
                 localStorage.PersonalFinanceManager_theme = value;
             });
                         
@@ -38462,7 +38759,7 @@ define('core/pfmain',[ 'jquery',
                 callback: function(){
                     setTimeout(function() {
                         // Apply bindings
-                        ko.applyBindings(App.financemanager, document.getElementById("htmlTop"));
+                        ko.applyBindings(App.applicationContext, document.getElementById("htmlTop"));
 
                         App.load();
                     }, 15);

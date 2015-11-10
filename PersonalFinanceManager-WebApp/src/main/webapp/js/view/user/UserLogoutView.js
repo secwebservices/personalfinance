@@ -67,7 +67,7 @@ define(['model/user/UserModel',
      * @returns {object}
      */
     UserLogoutView.prototype.render = function() {
-        var self = this, userModel, $el, templateData;
+        var self = this, userModel = {}, $el, templateData;
 
         self.logger.debug("UserLogoutView.prototype.render");
 
@@ -77,16 +77,10 @@ define(['model/user/UserModel',
             templateData = self.templateManager.getTemplate('logout');
 
             $el.html(templateData);
-
-            userModel = new UserModel(ko.toJS(self.user));
             
             $.extend(userModel, {
             	doLogout: function(){
-            		var loginRequest = {
-						username: userModel.username()
-			    	};
-            		
-            		Mediator.publish({channel: 'PF-Login-Request', logoutRequest: logoutRequest});
+            		Mediator.publish({channel: 'PF-Logout-Request'});
             	}
             });
 

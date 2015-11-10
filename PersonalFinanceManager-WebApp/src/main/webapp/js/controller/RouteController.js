@@ -16,22 +16,12 @@ define([
      function init(){
     	 var router = new Sammy(), logger = new LoggerConfig().getLogger('RouteController.js');
     	 
-    	 
-    	 function addRoute(data){
-    		 logger.debug(JSON.stringify(data));
-    		 router.route(data.method, data.path, data.callback);
-    	 }
-
-    	 function removeRoute(data){
-    		 //TODO get this working
-    	 }
-    	 
-    	 
-    	 router.run('#/');
+    	 router.notFound = function(verb, path) {
+             logger.debug("Route not found", verb, path);
+         };
     	 
          return {
-             "addRoute": addRoute,
-             "removeRoute": removeRoute
+             router : router
          };
      }
      

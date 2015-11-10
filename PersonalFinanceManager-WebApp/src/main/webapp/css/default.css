@@ -1,61 +1,100 @@
 body {
   margin: 0;
   padding: 5px 10px;
-  font-size: 12px;
+  font: 10px Arial, Tahoma, Verdana, sans-serif;
   min-height: 650px;
-  /*     &.ui-widget-content {
-        border: none;    
-    } */
 }
-body .header {
+h1 {
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 32px;
+}
+h2 {
+  font-size: 22px;
+  font-weight: bold;
+  margin: 5px 0;
+  padding: 2px 0;
+}
+h3 {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 5px 0;
+  padding: 2px 0;
+}
+h4 {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 5px 0;
+  padding: 2px 0;
+}
+h5 {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 5px 0;
+  padding: 2px 0;
+}
+h6 {
+  font-size: 14px;
+  font-weight: bold;
+  margin: 5px 0;
+  padding: 2px 0;
+}
+.header {
   margin: 10px 0 0 0;
   width: calc(100% - 10px);
   display: block;
 }
-body .header .wrapper {
+.header .wrapper {
   position: relative;
   overflow: hidden;
   height: 66px;
 }
-body .header .themechooser {
+.header .themechooser {
   float: right;
   right: 4px;
   top: 5px;
   position: relative;
   font-size: .65em;
 }
-body .header .title {
-  top: -21px;
-  position: relative;
+.header .title {
   float: left;
+  padding-left: 10px;
 }
-body .header .navigation {
-  top: -35px;
-  position: relative;
+.header .navigation {
   clear: both;
   float: left;
+  width: 100%;
 }
-body .header .navigation ul {
+.header .navigation ul {
+  padding: 0;
+  margin: 0;
   list-style: none;
   display: inline-block;
 }
-body .header .navigation ul li {
+.header .navigation ul li {
   float: left;
   padding: 0 10px;
 }
-body .header .navigation ul li.last {
+.header .navigation ul li.last {
   float: right;
 }
-body .section {
-  width: calc(100% - 10px);
-  min-height: 300px;
+.section {
+  width: calc(100% - 30px);
+  min-height: calc(100% - 130px);
+  padding: 20px 10px 0 10px;
 }
-body .footer {
+.footer {
   width: calc(100% - 10px);
   min-height: 25px;
 }
-body .footer .wrapper {
+.footer .wrapper {
   padding-left: 10px;
+}
+.footer .systemtime {
+  float: right;
+  width: 300px;
+  text-align: right;
+  padding-right: 10px;
 }
 .ui-tabs-anchor:focus {
   outline: none;
