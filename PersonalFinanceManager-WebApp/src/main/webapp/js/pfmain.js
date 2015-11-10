@@ -30,7 +30,13 @@ define([ 'jquery',
             	"servertime": ko.observable(),
             	"user": ko.observable(undefined),
             	"uiTheme": ko.observable("start"),
-            	"uiThemes": uiThemes
+            	"uiThemes": uiThemes,
+            	"loginRequest": function(){
+            		Mediator.publish({channel: 'PF-Render', view: 'UserLoginView', derender: false});
+            	},
+            	"logoutRequest": function(){
+            		Mediator.publish({channel: 'PF-Render', view: 'UserLogoutView', derender: false});
+            	}
             }),
             "load" : function(){
                 // Load Configuration form LocalStorage

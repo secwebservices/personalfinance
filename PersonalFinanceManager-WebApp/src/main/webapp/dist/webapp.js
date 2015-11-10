@@ -34944,6 +34944,58 @@ define('utilities/knockout/BindingHandlers',['knockoutjs', 'LoggerConfig', 'jque
         }
     };
 
+    /**
+     * dialog jQuery UI dialog binding
+     */
+    logger.debug("Adding dialog binding");
+    ko.bindingHandlers.dialog = {
+        init : function(element, valueAccessor) {
+            var retVal, options = {
+                title : 'Notification',
+                closeOnEscape : true,
+                height : ($(window).height() * 0.75),
+                width : ($(window).width() * 0.75),
+                show : {
+                    effect : 'blind',
+                    duration : 250
+                },
+                hide : {
+                    effect : 'blind',
+                    duration : 250
+                },
+                position : {
+                    my : "center",
+                    at : "center",
+                    of : "body"
+                }
+            };
+
+            if ( valueAccessor() ) {
+                $.extend(options, ko.utils.unwrapObservable(ko.toJS(valueAccessor())));
+            }
+
+            $.extend(options, {
+                beforeClose : function() {
+                    ko.utils.domNodeDisposal.removeNode(element);
+                }
+            });
+
+            logger.warn(options);
+            
+            $(element).dialog(options);
+
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+                $(element).dialog("destroy");
+            });
+
+            retVal = {
+                controlsDescendentBindings : true
+            };
+
+            return retVal;
+        }
+    };    
+    
     existingBindingProvider = ko.bindingProvider.instance;
 
     /**
@@ -35757,6 +35809,10 @@ define('view/user/UserLoginView',['model/user/UserModel',
      */
     UserLoginView.prototype.templateManager = undefined;
 
+    UserLoginView.prototype.template = 'login';
+    
+    UserLoginView.prototype.rendered = false;
+    
     UserLoginView.prototype.initialize = function (config) {
         var self = this, c, options = $.extend({}, config);
         
@@ -35775,10 +35831,22 @@ define('view/user/UserLoginView',['model/user/UserModel',
         	callback: function(message){
         		if(message.view === 'UserLoginView'){
         			self.render(); 
+        		}else if(self.rendered && message.derender){
+        			self.derender();
         		}
         	},
         	context: self
     	});
+        
+        Mediator.subscribe({
+        	channel:'PF-Derender', 
+        	callback: function(message){
+        		if(message.view === 'UserLoginView' && self.rendered){
+        			self.derender();
+        		}
+        	},
+        	context: self
+    	});        
     };
     
     /**
@@ -35794,10 +35862,10 @@ define('view/user/UserLoginView',['model/user/UserModel',
         try {
             $el = $(self.element);
             
-            templateData = self.templateManager.getTemplate('login');
+            templateData = self.templateManager.getTemplate(self.template);
             
-            $el.html(templateData);
-
+            $el.html(templateData).show();
+            
             userModel = new UserModel();
             
             $.extend(userModel, {
@@ -35808,15 +35876,40 @@ define('view/user/UserLoginView',['model/user/UserModel',
 			    	};
             		
             		Mediator.publish({channel: 'PF-Login-Request', loginRequest: loginRequest});
+            	},
+            	derender: function(){
+            		Mediator.publish({channel: 'PF-Derender', view: 'UserLoginView'});
             	}
             });
 
             ko.cleanNode($el[0]);
             ko.applyBindings(userModel, $el[0]);
+
+            self.rendered = true;
         } catch (e) {
             self.logger.error('UserLoginView.prototype.render', e);
         }
 
+    };
+    
+    UserLoginView.prototype.derender = function() {
+        var self = this, $el;
+
+        self.logger.debug("UserLoginView.prototype.derender");
+        
+        try {
+            $('.loginWrapper').dialog('close');
+            
+            $el = $(self.element);
+            $el.html('').hide();
+            
+            self.templateManager.clearTemplate(self.template);
+            ko.cleanNode($el[0]);
+            
+            self.rendered = false;
+        } catch (e) {
+            self.logger.error('UserLoginView.prototype.derender', e);
+        }        
     };
 
     // Return the function
@@ -35862,6 +35955,10 @@ define('view/user/UserLogoutView',['model/user/UserModel',
      */
     UserLogoutView.prototype.templateManager = undefined;
 
+    UserLogoutView.prototype.template = 'logout';
+    
+    UserLogoutView.prototype.rendered = false;
+    
     UserLogoutView.prototype.initialize = function (config) {
         var self = this, c, options = $.extend({}, config);
         
@@ -35880,10 +35977,22 @@ define('view/user/UserLogoutView',['model/user/UserModel',
         	callback: function(message){
         		if(message.view === 'UserLogoutView'){
         			self.render(); 
+        		}else if(self.rendered && message.derender){
+        			self.derender();
         		}
         	},
         	context: self
     	});
+        
+        Mediator.subscribe({
+        	channel:'PF-Derender', 
+        	callback: function(message){
+        		if(message.view === 'UserLogoutView' && self.rendered){
+        			self.derender();
+        		}
+        	},
+        	context: self
+    	});           
     };
     
     /**
@@ -35899,22 +36008,47 @@ define('view/user/UserLogoutView',['model/user/UserModel',
         try {
             $el = $(self.element);
             
-            templateData = self.templateManager.getTemplate('logout');
+            templateData = self.templateManager.getTemplate(self.template);
 
-            $el.html(templateData);
+            $el.html(templateData).show();
             
             $.extend(userModel, {
             	doLogout: function(){
             		Mediator.publish({channel: 'PF-Logout-Request'});
+            	},
+            	derender: function(){
+            		Mediator.publish({channel: 'PF-Derender', view: 'UserLogoutView'});
             	}
             });
 
             ko.cleanNode($el[0]);
             ko.applyBindings(userModel, $el[0]);
+            
+            self.rendered = true;            
         } catch (e) {
             self.logger.error('UserLogoutView.prototype.render', e);
         }
 
+    };
+    
+    UserLogoutView.prototype.derender = function() {
+        var self = this, $el;
+
+        self.logger.debug("UserLogoutView.prototype.derender");
+        
+        try {
+            $('.loginWrapper').dialog('close');
+            
+        	$el = $(self.element);
+            $el.html('').hide();
+
+            self.templateManager.clearTemplate(self.template);
+            ko.cleanNode($el[0]);
+            
+            self.rendered = false;
+        } catch (e) {
+            self.logger.error('UserLogoutView.prototype.derender', e);
+        }        
     };
 
     // Return the function
@@ -38134,14 +38268,14 @@ define('controller/user/UserController',['jquery',
     	
     	userLoginView = new UserLoginView({
             /** the element to render the view on. */
-            element : '.viewpoint',
+            element : '.userdialog',
             templateManager : config.templateManager,
             user: config.user
         });
 
         userLogoutView = new UserLogoutView({
             /** the element to render the view on. */
-            element : '.viewpoint',
+            element : '.userdialog',
             templateManager : config.templateManager,
             user: config.user
         });
@@ -38178,6 +38312,8 @@ define('controller/user/UserController',['jquery',
     
     UserController.prototype.timeoutInterval = undefined;
     
+    UserController.prototype.templateManager = undefined;
+    
     UserController.prototype.loginRequest = function(message){
     	var self = this, loginRequest = message.loginRequest;
     	
@@ -38193,7 +38329,8 @@ define('controller/user/UserController',['jquery',
 				self.userLoggedIn = true;
 				self.timeleft = 60;
 				if(status === 'success'){
-			    	Mediator.publish({channel: 'PF-Login-Success'});					
+			    	Mediator.publish({channel: 'PF-Login-Success'});
+			    	Mediator.publish({channel: 'PF-Derender', view: 'UserLoginView'});
 				}
 		    },
 		    dataType: 'json'
@@ -38214,7 +38351,8 @@ define('controller/user/UserController',['jquery',
 				self.timeleft = 60;
 				
 				if(status === 'success'){
-					Mediator.publish({channel: 'PF-Logout-Success'});					
+					Mediator.publish({channel: 'PF-Logout-Success'});	
+					Mediator.publish({channel: 'PF-Derender', view: 'UserLogoutView'});
 				}
 		    },
 		    dataType: 'json'
@@ -38237,13 +38375,13 @@ define('controller/user/UserController',['jquery',
               
         RouteController.router.route('get', '#login', 
         	function(){
-        		Mediator.publish({channel: 'PF-Render', view: 'UserLoginView'});	
+        		Mediator.publish({channel: 'PF-Render', view: 'UserLoginView', derender: false});	
         	}
         );
         
         RouteController.router.route('get', '#logout', 
         	function(){
-        		Mediator.publish({channel: 'PF-Render', view: 'UserLogoutView'});	
+        		Mediator.publish({channel: 'PF-Render', view: 'UserLogoutView', derender: false});	
         	}
         );   
         
@@ -38328,10 +38466,11 @@ define('controller/user/UserController',['jquery',
         self.userSessionHasTimedout = true;
         self.logger.debug('UserController.prototype.sessionTimeout', self.user);
 
-        $('<div id="sessionTimeoutDialog">' + 
-        		'<p>Your session is about to time out.</br>Click Ok to logout, or cancel to stay logged in and continue<p>' +
-                '<span id="timeLeft">60</span> Second(s) until logout</div>').appendTo('body');
-        self.sessionDialog = $('#sessionTimeoutDialog').dialog(
+        if($('.sessionTimeoutDialog').length === 0){
+            $('body').append(self.templateManager.getTemplate('session_timeout'));        	
+        }
+
+        self.sessionDialog = $('.sessionTimeoutDialog').dialog(
         {
             title : 'Notification',
             modal : true,
@@ -38362,7 +38501,7 @@ define('controller/user/UserController',['jquery',
             },
             open : function() {
             	self.timeleft = 60;
-            	$('#timeLeft').html(self.timeleft);
+            	$('.timeLeft').html(self.timeleft);
             	clearInterval(self.timeoutInterval);
 
             	self.timeoutInterval = setInterval(function(){
@@ -38377,7 +38516,7 @@ define('controller/user/UserController',['jquery',
         var self = this;
 
         self.timeleft += -1;
-        $('#timeLeft').html(self.timeleft);
+        $('.timeLeft').html(self.timeleft);
 
         if (self.timeleft === 0) {
             self.sessionDialog.dialog('close');
@@ -38462,6 +38601,10 @@ define('view/IndexView',['model/IndexModel',
      * @param template {object}
      */
     IndexView.prototype.templateManager = undefined;
+    
+    IndexView.prototype.template = 'Index';
+    
+    IndexView.prototype.rendered = false;
 
     IndexView.prototype.initialize = function (config) {
         var self = this, c, options = $.extend({}, config);
@@ -38481,10 +38624,22 @@ define('view/IndexView',['model/IndexModel',
         	callback: function(message){
         		if(message.view === 'IndexView'){
         			self.render(); 
+        		}else if(self.rendered && message.derender){
+        			self.derender();
         		}
         	},
         	context: self
     	});
+        
+        Mediator.subscribe({
+        	channel:'PF-Derender', 
+        	callback: function(message){
+        		if(message.view === 'IndexView' && self.rendered){
+        			self.derender();
+        		}
+        	},
+        	context: self
+    	});           
     };
     
     /**
@@ -38500,7 +38655,7 @@ define('view/IndexView',['model/IndexModel',
         try {
             $el = $(self.element);
             
-            templateData = self.templateManager.getTemplate('Index');
+            templateData = self.templateManager.getTemplate(self.template);
             
             $el.html(templateData);
 
@@ -38508,10 +38663,28 @@ define('view/IndexView',['model/IndexModel',
 
             ko.cleanNode($el[0]);
             ko.applyBindings(indexModel, $el[0]);
+            
+            self.rendered = true;            
         } catch (e) {
             self.logger.error('IndexView.prototype.render', e);
         }
 
+    };
+    
+    IndexView.prototype.derender = function() {
+        var self = this, $el;
+
+        self.logger.debug("IndexView.prototype.derender");
+        
+        try {
+            $el = $(self.element);
+            self.templateManager.clearTemplate(self.template);
+            ko.cleanNode($el[0]);
+            
+            self.rendered = false;
+        } catch (e) {
+            self.logger.error('IndexView.prototype.derender', e);
+        }        
     };
 
     // Return the function
@@ -38552,6 +38725,10 @@ define('view/DashboardView',[
      */
     DashboardView.prototype.templateManager = undefined;
     
+    DashboardView.prototype.template = 'dashboard';
+    
+    DashboardView.prototype.rendered = false;
+    
     DashboardView.prototype.applicationContext = undefined;
 
     DashboardView.prototype.initialize = function (config) {
@@ -38572,10 +38749,22 @@ define('view/DashboardView',[
         	callback: function(message){
         		if(message.view === 'DashboardView'){
         			self.render(); 
+        		}else if(self.rendered && message.derender){
+        			self.derender();
         		}
         	},
         	context: self
     	});
+        
+        Mediator.subscribe({
+        	channel:'PF-Derender', 
+        	callback: function(message){
+        		if(message.view === 'DashboardView' && self.rendered){
+        			self.derender();
+        		}
+        	},
+        	context: self
+    	});          
     };
     
     /**
@@ -38591,16 +38780,34 @@ define('view/DashboardView',[
         try {
             $el = $(self.element);
             
-            templateData = self.templateManager.getTemplate('dashboard');
+            templateData = self.templateManager.getTemplate(self.template);
             
             $el.html(templateData);
 
             ko.cleanNode($el[0]);
             ko.applyBindings(self.applicationContext, $el[0]);
+            
+            self.rendered = true;            
         } catch (e) {
             self.logger.error('DashboardView.prototype.render', e);
         }
 
+    };
+    
+    DashboardView.prototype.derender = function() {
+        var self = this, $el;
+
+        self.logger.debug("DashboardView.prototype.derender");
+        
+        try {
+            $el = $(self.element);
+            self.templateManager.clearTemplate(self.template);
+            ko.cleanNode($el[0]);
+            
+            self.rendered = false;
+        } catch (e) {
+            self.logger.error('DashboardView.prototype.derender', e);
+        }        
     };
 
     // Return the function
@@ -38661,13 +38868,13 @@ define('controller/user/DashboardController',['jquery',
     	
         RouteController.router.route('get', '#welcome', 
 	    	function(){
-				Mediator.publish({channel: 'PF-Render', view: 'IndexView'});	
+				Mediator.publish({channel: 'PF-Render', view: 'IndexView', derender: true});	
 	    	}
 	    );
 
         RouteController.router.route('get', '#dashboard', 
 	    	function(){
-				Mediator.publish({channel: 'PF-Render', view: 'DashboardView'});	
+				Mediator.publish({channel: 'PF-Render', view: 'DashboardView', derender: true});	
 	    	}
 	    );
                       
@@ -38710,7 +38917,13 @@ define('core/pfmain',[ 'jquery',
             	"servertime": ko.observable(),
             	"user": ko.observable(undefined),
             	"uiTheme": ko.observable("start"),
-            	"uiThemes": uiThemes
+            	"uiThemes": uiThemes,
+            	"loginRequest": function(){
+            		Mediator.publish({channel: 'PF-Render', view: 'UserLoginView', derender: false});
+            	},
+            	"logoutRequest": function(){
+            		Mediator.publish({channel: 'PF-Render', view: 'UserLogoutView', derender: false});
+            	}
             }),
             "load" : function(){
                 // Load Configuration form LocalStorage

@@ -19,14 +19,14 @@ define(['jquery',
     	
     	userLoginView = new UserLoginView({
             /** the element to render the view on. */
-            element : '.viewpoint',
+            element : '.userdialog',
             templateManager : config.templateManager,
             user: config.user
         });
 
         userLogoutView = new UserLogoutView({
             /** the element to render the view on. */
-            element : '.viewpoint',
+            element : '.userdialog',
             templateManager : config.templateManager,
             user: config.user
         });
@@ -63,6 +63,8 @@ define(['jquery',
     
     UserController.prototype.timeoutInterval = undefined;
     
+    UserController.prototype.templateManager = undefined;
+    
     UserController.prototype.loginRequest = function(message){
     	var self = this, loginRequest = message.loginRequest;
     	
@@ -78,7 +80,8 @@ define(['jquery',
 				self.userLoggedIn = true;
 				self.timeleft = 60;
 				if(status === 'success'){
-			    	Mediator.publish({channel: 'PF-Login-Success'});					
+			    	Mediator.publish({channel: 'PF-Login-Success'});
+			    	Mediator.publish({channel: 'PF-Derender', view: 'UserLoginView'});
 				}
 		    },
 		    dataType: 'json'
@@ -99,7 +102,8 @@ define(['jquery',
 				self.timeleft = 60;
 				
 				if(status === 'success'){
-					Mediator.publish({channel: 'PF-Logout-Success'});					
+					Mediator.publish({channel: 'PF-Logout-Success'});	
+					Mediator.publish({channel: 'PF-Derender', view: 'UserLogoutView'});
 				}
 		    },
 		    dataType: 'json'
@@ -122,13 +126,13 @@ define(['jquery',
               
         RouteController.router.route('get', '#login', 
         	function(){
-        		Mediator.publish({channel: 'PF-Render', view: 'UserLoginView'});	
+        		Mediator.publish({channel: 'PF-Render', view: 'UserLoginView', derender: false});	
         	}
         );
         
         RouteController.router.route('get', '#logout', 
         	function(){
-        		Mediator.publish({channel: 'PF-Render', view: 'UserLogoutView'});	
+        		Mediator.publish({channel: 'PF-Render', view: 'UserLogoutView', derender: false});	
         	}
         );   
         
@@ -213,10 +217,11 @@ define(['jquery',
         self.userSessionHasTimedout = true;
         self.logger.debug('UserController.prototype.sessionTimeout', self.user);
 
-        $('<div id="sessionTimeoutDialog">' + 
-        		'<p>Your session is about to time out.</br>Click Ok to logout, or cancel to stay logged in and continue<p>' +
-                '<span id="timeLeft">60</span> Second(s) until logout</div>').appendTo('body');
-        self.sessionDialog = $('#sessionTimeoutDialog').dialog(
+        if($('.sessionTimeoutDialog').length === 0){
+            $('body').append(self.templateManager.getTemplate('session_timeout'));        	
+        }
+
+        self.sessionDialog = $('.sessionTimeoutDialog').dialog(
         {
             title : 'Notification',
             modal : true,
@@ -247,7 +252,7 @@ define(['jquery',
             },
             open : function() {
             	self.timeleft = 60;
-            	$('#timeLeft').html(self.timeleft);
+            	$('.timeLeft').html(self.timeleft);
             	clearInterval(self.timeoutInterval);
 
             	self.timeoutInterval = setInterval(function(){
@@ -262,7 +267,7 @@ define(['jquery',
         var self = this;
 
         self.timeleft += -1;
-        $('#timeLeft').html(self.timeleft);
+        $('.timeLeft').html(self.timeleft);
 
         if (self.timeleft === 0) {
             self.sessionDialog.dialog('close');

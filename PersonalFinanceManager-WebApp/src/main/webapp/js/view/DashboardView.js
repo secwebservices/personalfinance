@@ -3,18 +3,18 @@
 /**
  * @author Robert “The Man” Suppenbach
  */
-define(['model/IndexModel', 
+define([ 
         'knockoutjs',
         'LoggerConfig',
         'Mediator'], 
-        function(IndexModel, ko, LoggerConfig, Mediator) {
+        function(ko, LoggerConfig, Mediator) {
 
     /**
      * @constructor
      */
-    function IndexView(config) {
+    function DashboardView(config) {
     	var self = this;
-    	self.logger = new LoggerConfig().getLogger('IndexView.js'); 
+    	self.logger = new LoggerConfig().getLogger('DashboardView.js'); 
 
         self.initialize(config);
     }
@@ -22,24 +22,26 @@ define(['model/IndexModel',
     /**
      * @param logger {object}
      */
-    IndexView.prototype.logger = undefined;
+    DashboardView.prototype.logger = undefined;
     /**
      * @param element {object}
      */
-    IndexView.prototype.element = undefined;
+    DashboardView.prototype.element = undefined;
     /**
      * @param template {object}
      */
-    IndexView.prototype.templateManager = undefined;
+    DashboardView.prototype.templateManager = undefined;
     
-    IndexView.prototype.template = 'Index';
+    DashboardView.prototype.template = 'dashboard';
     
-    IndexView.prototype.rendered = false;
+    DashboardView.prototype.rendered = false;
+    
+    DashboardView.prototype.applicationContext = undefined;
 
-    IndexView.prototype.initialize = function (config) {
+    DashboardView.prototype.initialize = function (config) {
         var self = this, c, options = $.extend({}, config);
         
-        self.logger.info('IndexView Initialize');
+        self.logger.info('DashboardView Initialize');
         
         for (c in options) {
             if (options.hasOwnProperty(c) && typeof self[c] === 'function') {
@@ -52,7 +54,7 @@ define(['model/IndexModel',
         Mediator.subscribe({
         	channel:'PF-Render', 
         	callback: function(message){
-        		if(message.view === 'IndexView'){
+        		if(message.view === 'DashboardView'){
         			self.render(); 
         		}else if(self.rendered && message.derender){
         			self.derender();
@@ -64,12 +66,12 @@ define(['model/IndexModel',
         Mediator.subscribe({
         	channel:'PF-Derender', 
         	callback: function(message){
-        		if(message.view === 'IndexView' && self.rendered){
+        		if(message.view === 'DashboardView' && self.rendered){
         			self.derender();
         		}
         	},
         	context: self
-    	});           
+    	});          
     };
     
     /**
@@ -77,10 +79,10 @@ define(['model/IndexModel',
      * 
      * @returns {object}
      */
-    IndexView.prototype.render = function() {
-        var self = this, indexModel, $el, templateData;
+    DashboardView.prototype.render = function() {
+        var self = this, $el, templateData;
 
-        self.logger.debug("IndexView.prototype.render");
+        self.logger.debug("DashboardView.prototype.render");
 
         try {
             $el = $(self.element);
@@ -89,22 +91,20 @@ define(['model/IndexModel',
             
             $el.html(templateData);
 
-            indexModel = new IndexModel();
-
             ko.cleanNode($el[0]);
-            ko.applyBindings(indexModel, $el[0]);
+            ko.applyBindings(self.applicationContext, $el[0]);
             
             self.rendered = true;            
         } catch (e) {
-            self.logger.error('IndexView.prototype.render', e);
+            self.logger.error('DashboardView.prototype.render', e);
         }
 
     };
     
-    IndexView.prototype.derender = function() {
+    DashboardView.prototype.derender = function() {
         var self = this, $el;
 
-        self.logger.debug("IndexView.prototype.derender");
+        self.logger.debug("DashboardView.prototype.derender");
         
         try {
             $el = $(self.element);
@@ -113,11 +113,11 @@ define(['model/IndexModel',
             
             self.rendered = false;
         } catch (e) {
-            self.logger.error('IndexView.prototype.derender', e);
+            self.logger.error('DashboardView.prototype.derender', e);
         }        
     };
 
     // Return the function
-    return IndexView;
+    return DashboardView;
 
 });

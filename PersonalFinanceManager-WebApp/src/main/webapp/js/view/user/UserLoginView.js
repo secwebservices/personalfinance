@@ -37,6 +37,10 @@ define(['model/user/UserModel',
      */
     UserLoginView.prototype.templateManager = undefined;
 
+    UserLoginView.prototype.template = 'login';
+    
+    UserLoginView.prototype.rendered = false;
+    
     UserLoginView.prototype.initialize = function (config) {
         var self = this, c, options = $.extend({}, config);
         
@@ -55,10 +59,22 @@ define(['model/user/UserModel',
         	callback: function(message){
         		if(message.view === 'UserLoginView'){
         			self.render(); 
+        		}else if(self.rendered && message.derender){
+        			self.derender();
         		}
         	},
         	context: self
     	});
+        
+        Mediator.subscribe({
+        	channel:'PF-Derender', 
+        	callback: function(message){
+        		if(message.view === 'UserLoginView' && self.rendered){
+        			self.derender();
+        		}
+        	},
+        	context: self
+    	});        
     };
     
     /**
@@ -74,10 +90,10 @@ define(['model/user/UserModel',
         try {
             $el = $(self.element);
             
-            templateData = self.templateManager.getTemplate('login');
+            templateData = self.templateManager.getTemplate(self.template);
             
-            $el.html(templateData);
-
+            $el.html(templateData).show();
+            
             userModel = new UserModel();
             
             $.extend(userModel, {
@@ -88,15 +104,40 @@ define(['model/user/UserModel',
 			    	};
             		
             		Mediator.publish({channel: 'PF-Login-Request', loginRequest: loginRequest});
+            	},
+            	derender: function(){
+            		Mediator.publish({channel: 'PF-Derender', view: 'UserLoginView'});
             	}
             });
 
             ko.cleanNode($el[0]);
             ko.applyBindings(userModel, $el[0]);
+
+            self.rendered = true;
         } catch (e) {
             self.logger.error('UserLoginView.prototype.render', e);
         }
 
+    };
+    
+    UserLoginView.prototype.derender = function() {
+        var self = this, $el;
+
+        self.logger.debug("UserLoginView.prototype.derender");
+        
+        try {
+            $('.loginWrapper').dialog('close');
+            
+            $el = $(self.element);
+            $el.html('').hide();
+            
+            self.templateManager.clearTemplate(self.template);
+            ko.cleanNode($el[0]);
+            
+            self.rendered = false;
+        } catch (e) {
+            self.logger.error('UserLoginView.prototype.derender', e);
+        }        
     };
 
     // Return the function

@@ -37,6 +37,10 @@ define(['model/user/UserModel',
      */
     UserLogoutView.prototype.templateManager = undefined;
 
+    UserLogoutView.prototype.template = 'logout';
+    
+    UserLogoutView.prototype.rendered = false;
+    
     UserLogoutView.prototype.initialize = function (config) {
         var self = this, c, options = $.extend({}, config);
         
@@ -55,10 +59,22 @@ define(['model/user/UserModel',
         	callback: function(message){
         		if(message.view === 'UserLogoutView'){
         			self.render(); 
+        		}else if(self.rendered && message.derender){
+        			self.derender();
         		}
         	},
         	context: self
     	});
+        
+        Mediator.subscribe({
+        	channel:'PF-Derender', 
+        	callback: function(message){
+        		if(message.view === 'UserLogoutView' && self.rendered){
+        			self.derender();
+        		}
+        	},
+        	context: self
+    	});           
     };
     
     /**
@@ -74,22 +90,47 @@ define(['model/user/UserModel',
         try {
             $el = $(self.element);
             
-            templateData = self.templateManager.getTemplate('logout');
+            templateData = self.templateManager.getTemplate(self.template);
 
-            $el.html(templateData);
+            $el.html(templateData).show();
             
             $.extend(userModel, {
             	doLogout: function(){
             		Mediator.publish({channel: 'PF-Logout-Request'});
+            	},
+            	derender: function(){
+            		Mediator.publish({channel: 'PF-Derender', view: 'UserLogoutView'});
             	}
             });
 
             ko.cleanNode($el[0]);
             ko.applyBindings(userModel, $el[0]);
+            
+            self.rendered = true;            
         } catch (e) {
             self.logger.error('UserLogoutView.prototype.render', e);
         }
 
+    };
+    
+    UserLogoutView.prototype.derender = function() {
+        var self = this, $el;
+
+        self.logger.debug("UserLogoutView.prototype.derender");
+        
+        try {
+            $('.loginWrapper').dialog('close');
+            
+        	$el = $(self.element);
+            $el.html('').hide();
+
+            self.templateManager.clearTemplate(self.template);
+            ko.cleanNode($el[0]);
+            
+            self.rendered = false;
+        } catch (e) {
+            self.logger.error('UserLogoutView.prototype.derender', e);
+        }        
     };
 
     // Return the function

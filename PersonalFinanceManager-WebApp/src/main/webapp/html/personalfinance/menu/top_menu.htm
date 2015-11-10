@@ -1,11 +1,11 @@
 <ul style="width: 99%">
     <!-- ko ifnot: user -->
-	    <li class="last"><a href="#login">Login</a></li>
+	    <li class="last"><a href="" data-bind="click: loginRequest">Login</a></li>
     <!-- /ko -->
     <!-- ko if: user -->
         <li><a href="#dashboard">Dashboard</a></li>
 	    <li><a href="#account">Account</a></li>
 	    <li><a href="#help">Help</a></li>
-	    <li class="last"><a href="#logout">Logout</a></li>
+	    <li class="last"><a href="" data-bind="click: logoutRequest">Logout</a></li>
     <!-- /ko -->    
 </ul>

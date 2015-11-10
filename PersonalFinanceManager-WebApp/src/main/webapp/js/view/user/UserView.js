@@ -37,6 +37,10 @@ define(['model/user/UserModel',
      */
     UserView.prototype.templateManager = undefined;
 
+    UserView.prototype.template = 'user_profile';
+    
+    UserView.prototype.rendered = false;
+    
     UserView.prototype.initialize = function (config) {
         var self = this, c, options = $.extend({}, config);
         
@@ -55,10 +59,22 @@ define(['model/user/UserModel',
         	callback: function(message){
         		if(message.view === 'UserView'){
         			self.render(); 
+        		}else if(self.rendered && message.derender){
+        			self.derender();
         		}
         	},
         	context: self
     	});
+        
+        Mediator.subscribe({
+        	channel:'PF-Derender', 
+        	callback: function(message){
+        		if(message.view === 'UserView' && self.rendered){
+        			self.derender();
+        		}
+        	},
+        	context: self
+    	});           
     };
     
     /**
@@ -74,7 +90,7 @@ define(['model/user/UserModel',
         try {
             $el = $(self.element);
             
-            templateData = self.templateManager.getTemplate('user_profile');
+            templateData = self.templateManager.getTemplate(self.template);
 
             $el.html(templateData);
 
@@ -82,12 +98,28 @@ define(['model/user/UserModel',
 
             ko.cleanNode($el[0]);
             ko.applyBindings(userModel, $el[0]);
-
-            Mediator.publish("PF-Ready", {});
+            
+            self.rendered = true;
         } catch (e) {
             self.logger.error('UserView.prototype.render', e);
         }
 
+    };
+    
+    UserView.prototype.derender = function() {
+        var self = this, $el;
+
+        self.logger.debug("UserView.prototype.derender");
+        
+        try {
+            $el = $(self.element);
+            self.templateManager.clearTemplate(self.template);
+            ko.cleanNode($el[0]);
+            
+            self.rendered = false;
+        } catch (e) {
+            self.logger.error('UserView.prototype.derender', e);
+        }        
     };
 
     // Return the function
