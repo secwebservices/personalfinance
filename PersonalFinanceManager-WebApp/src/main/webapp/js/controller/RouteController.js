@@ -14,10 +14,11 @@ define([
      var instance;
 
      function init(){
-    	 var router = new Sammy();
+    	 var router = new Sammy(), logger = new LoggerConfig().getLogger('RouteController.js');
     	 
     	 
     	 function addRoute(data){
+    		 logger.debug(JSON.stringify(data));
     		 router.route(data.method, data.path, data.callback);
     	 }
 

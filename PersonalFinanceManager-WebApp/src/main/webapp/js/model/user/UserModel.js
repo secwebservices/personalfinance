@@ -28,19 +28,7 @@ define(['LoggerConfig',
     UserModel.prototype.enabled = ko.observable(undefined);
     
     UserModel.prototype.loginRequest = undefined;
-    
-    UserModel.prototype.doLogin = function(){
-    	var self = this, loginRequest;
-    	
-    	loginRequest = {
-			username: self.username(),
-			password: self.password()
-    	};
-
-    	Mediator.publish({channel: 'PF-Login-Request', loginRequest: loginRequest});
-    	
-    };
-    
+            
     UserModel.prototype.initialize = function (config) {
         var self = this, c, options = $.extend({}, config);
         

@@ -35830,19 +35830,7 @@ define('model/user/UserModel',['LoggerConfig',
     UserModel.prototype.enabled = ko.observable(undefined);
     
     UserModel.prototype.loginRequest = undefined;
-    
-    UserModel.prototype.doLogin = function(){
-    	var self = this, loginRequest;
-    	
-    	loginRequest = {
-			username: self.username(),
-			password: self.password()
-    	};
-
-    	Mediator.publish({channel: 'PF-Login-Request', loginRequest: loginRequest});
-    	
-    };
-    
+            
     UserModel.prototype.initialize = function (config) {
         var self = this, c, options = $.extend({}, config);
         
@@ -35865,7 +35853,7 @@ define('model/user/UserModel',['LoggerConfig',
 /**
  * @author Robert “The Man” Suppenbach
  */
-define('view/user/UserView',['model/user/UserModel', 
+define('view/user/UserLoginView',['model/user/UserModel', 
         'knockoutjs',
         'LoggerConfig',
         'Mediator'], 
@@ -35874,9 +35862,9 @@ define('view/user/UserView',['model/user/UserModel',
     /**
      * @constructor
      */
-    function UserView(config) {
+    function UserLoginView(config) {
     	var self = this;
-    	self.logger = new LoggerConfig().getLogger('UserView.js'); 
+    	self.logger = new LoggerConfig().getLogger('UserLoginView.js'); 
 
         self.initialize(config);
     }
@@ -35885,24 +35873,24 @@ define('view/user/UserView',['model/user/UserModel',
     /**
      * @param user {object}
      */
-    UserView.prototype.user = undefined;
+    UserLoginView.prototype.user = undefined;
     /**
      * @param logger {object}
      */
-    UserView.prototype.logger = undefined;
+    UserLoginView.prototype.logger = undefined;
     /**
      * @param element {object}
      */
-    UserView.prototype.element = undefined;
+    UserLoginView.prototype.element = undefined;
     /**
      * @param template {object}
      */
-    UserView.prototype.templateManager = undefined;
+    UserLoginView.prototype.templateManager = undefined;
 
-    UserView.prototype.initialize = function (config) {
+    UserLoginView.prototype.initialize = function (config) {
         var self = this, c, options = $.extend({}, config);
         
-        self.logger.info('UserView Initialize');
+        self.logger.info('UserLoginView Initialize');
         
         for (c in options) {
             if (options.hasOwnProperty(c) && typeof self[c] === 'function') {
@@ -35915,7 +35903,7 @@ define('view/user/UserView',['model/user/UserModel',
         Mediator.subscribe({
         	channel:'PF-Render', 
         	callback: function(message){
-        		if(message.view === 'UserView'){
+        		if(message.view === 'UserLoginView'){
         			self.render(); 
         		}
         	},
@@ -35928,37 +35916,145 @@ define('view/user/UserView',['model/user/UserModel',
      * 
      * @returns {object}
      */
-    UserView.prototype.render = function() {
+    UserLoginView.prototype.render = function() {
         var self = this, userModel, $el, templateData;
 
-        self.logger.debug("UserView.prototype.render");
+        self.logger.debug("UserLoginView.prototype.render");
 
         try {
             $el = $(self.element);
             
-            if(self.user()){
-                templateData = self.templateManager.getTemplate('user_profile');            	
-            }else{
-                templateData = self.templateManager.getTemplate('login');
-            }
-
+            templateData = self.templateManager.getTemplate('login');
             
             $el.html(templateData);
 
             userModel = new UserModel();
+            
+            $.extend(userModel, {
+            	doLogin: function(){
+            		var loginRequest = {
+						username: this.username(),
+						password: this.password()
+			    	};
+            		
+            		Mediator.publish({channel: 'PF-Login-Request', loginRequest: loginRequest});
+            	}
+            });
 
             ko.cleanNode($el[0]);
             ko.applyBindings(userModel, $el[0]);
-
-            Mediator.publish("PF-Ready", {});
         } catch (e) {
-            self.logger.error('UserView.prototype.render', e);
+            self.logger.error('UserLoginView.prototype.render', e);
         }
 
     };
 
     // Return the function
-    return UserView;
+    return UserLoginView;
+
+});
+/*jslint browser: true, devel: true */
+
+/**
+ * @author Robert “The Man” Suppenbach
+ */
+define('view/user/UserLogoutView',['model/user/UserModel', 
+        'knockoutjs',
+        'LoggerConfig',
+        'Mediator'], 
+        function(UserModel, ko, LoggerConfig, Mediator) {
+
+    /**
+     * @constructor
+     */
+    function UserLogoutView(config) {
+    	var self = this;
+    	self.logger = new LoggerConfig().getLogger('UserLogoutView.js'); 
+
+        self.initialize(config);
+    }
+
+    
+    /**
+     * @param user {object}
+     */
+    UserLogoutView.prototype.user = undefined;
+    /**
+     * @param logger {object}
+     */
+    UserLogoutView.prototype.logger = undefined;
+    /**
+     * @param element {object}
+     */
+    UserLogoutView.prototype.element = undefined;
+    /**
+     * @param template {object}
+     */
+    UserLogoutView.prototype.templateManager = undefined;
+
+    UserLogoutView.prototype.initialize = function (config) {
+        var self = this, c, options = $.extend({}, config);
+        
+        self.logger.info('UserLogoutView Initialize');
+        
+        for (c in options) {
+            if (options.hasOwnProperty(c) && typeof self[c] === 'function') {
+                self[c](options[c]);
+            }else if (options.hasOwnProperty(c)){
+                self[c] = options[c];
+            }
+        }
+        
+        Mediator.subscribe({
+        	channel:'PF-Render', 
+        	callback: function(message){
+        		if(message.view === 'UserLogoutView'){
+        			self.render(); 
+        		}
+        	},
+        	context: self
+    	});
+    };
+    
+    /**
+     * render the view
+     * 
+     * @returns {object}
+     */
+    UserLogoutView.prototype.render = function() {
+        var self = this, userModel, $el, templateData;
+
+        self.logger.debug("UserLogoutView.prototype.render");
+
+        try {
+            $el = $(self.element);
+            
+            templateData = self.templateManager.getTemplate('logout');
+
+            $el.html(templateData);
+
+            userModel = new UserModel(ko.toJS(self.user));
+            
+            $.extend(userModel, {
+            	doLogout: function(){
+            		var loginRequest = {
+						username: userModel.username()
+			    	};
+            		
+            		Mediator.publish({channel: 'PF-Login-Request', logoutRequest: logoutRequest});
+            	}
+            });
+
+            ko.cleanNode($el[0]);
+            ko.applyBindings(userModel, $el[0]);
+        } catch (e) {
+            self.logger.error('UserLogoutView.prototype.render', e);
+        }
+
+    };
+
+    // Return the function
+    return UserLogoutView;
 
 });
 // name: sammy
@@ -38134,10 +38230,11 @@ define('controller/RouteController',[
      var instance;
 
      function init(){
-    	 var router = new Sammy();
+    	 var router = new Sammy(), logger = new LoggerConfig().getLogger('RouteController.js');
     	 
     	 
     	 function addRoute(data){
+    		 logger.debug(JSON.stringify(data));
     		 router.route(data.method, data.path, data.callback);
     	 }
 
@@ -38171,15 +38268,23 @@ define('controller/RouteController',[
 define('controller/user/UserController',['jquery',
         'knockoutjs', 
         'LoggerConfig', 
-        'view/user/UserView',
-        'controller/RouteController'], function($, ko, LoggerConfig, UserView, RouteController){
+        'view/user/UserLoginView',
+        'view/user/UserLogoutView',
+        'controller/RouteController'], function($, ko, LoggerConfig, UserLoginView, UserLogoutView, RouteController){
 	
     function UserController(config){
-    	var self = this, userView;
+    	var self = this, userLoginView, userLogoutView;
     	
     	self.logger = new LoggerConfig().getLogger('UserController.js');
     	
-        userView = new UserView({
+    	userLoginView = new UserLoginView({
+            /** the element to render the view on. */
+            element : '.viewpoint',
+            templateManager : config.templateManager,
+            user: config.user
+        });
+
+        userLogoutView = new UserLoginView({
             /** the element to render the view on. */
             element : '.viewpoint',
             templateManager : config.templateManager,
@@ -38192,6 +38297,10 @@ define('controller/user/UserController',['jquery',
          * Add the subscription to control login requests
          */
         Mediator.subscribe({channel: 'PF-Login-Request', context: self, callback: self.loginRequest});
+        /*
+         * Add the subscription to control logout requests
+         */        
+        Mediator.subscribe({channel: 'PF-Logout-Request', context: self, callback: self.logoutRequest});
     }
     
     UserController.prototype.logger = undefined;
@@ -38210,12 +38319,31 @@ define('controller/user/UserController',['jquery',
 				self.logger.debug('Login Request', status);
 				self.user(data);
 				if(status === 'success'){
-			    	Mediator.publish({channel: 'PF-Render', view: 'UserView'});					
+			    	Mediator.publish({channel: 'PF-Login-Success'});					
 				}
 		    },
 		    dataType: 'json'
 		});
     };
+    
+    UserController.prototype.logoutRequest = function(message){
+    	var self = this, logoutRequest = message.logoutRequest;
+    	
+    	$.ajax({
+		    type: "POST",
+		    contentType: 'application/json',
+		    url: '/api/user/logout',
+		    data: JSON.stringify(logoutRequest),
+		    success: function(data, status, request){
+				self.logger.debug('Logout Request', status);
+				self.user(undefined);
+				if(status === 'success'){
+					Mediator.publish({channel: 'PF-Logout-Success'});					
+				}
+		    },
+		    dataType: 'json'
+		});
+    };    
     
     UserController.prototype.initialize = function (config) {
         var self = this, c, options = $.extend({}, config);
@@ -38234,9 +38362,17 @@ define('controller/user/UserController',['jquery',
         	method: 'get', 
         	path: '#login', 
         	callback: function(){
-        		Mediator.publish({channel: 'PF-Render', view: 'UserView'});	
+        		Mediator.publish({channel: 'PF-Render', view: 'UserLoginView'});	
         	}
         });
+        
+        RouteController.addRoute({
+        	method: 'get', 
+        	path: '#logout', 
+        	callback: function(){
+        		Mediator.publish({channel: 'PF-Render', view: 'UserLogoutView'});	
+        	}
+        });        
     };
     
     return UserController;
