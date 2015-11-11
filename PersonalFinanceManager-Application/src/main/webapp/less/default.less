@@ -1,0 +1,161 @@
+body {
+    margin: 0;
+    padding: 5px 10px; 
+    font: 10px Arial, Tahoma, Verdana, sans-serif;
+    min-height: 650px;    
+}
+
+
+h1 {
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 32px;
+}
+
+h2 {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 5px 0;
+    padding: 2px 0;
+}
+
+h3 {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 5px 0;
+    padding: 2px 0;
+}
+
+h4 {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 5px 0;
+    padding: 2px 0;    
+}
+
+h5 {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px 0;
+    padding: 2px 0;    
+}
+
+h6 {
+    font-size: 14px;
+    font-weight: bold;
+    margin: 5px 0;
+    padding: 2px 0;    
+}
+
+.header {
+    margin: 10px 0 0 0;
+    width:  ~"calc(100% - 10px)";
+    display: block;
+
+    .wrapper {
+        position: relative;
+        overflow: hidden;
+        height: 66px;
+    }
+    
+    .themechooser {
+        float: right;
+        right: 4px;
+        top: 5px;
+        position: relative;
+        font-size: .65em;
+    }
+    
+    .title {
+       float:left;
+       padding-left: 10px;
+    }
+    
+    .navigation {
+        clear: both;
+        float: left;
+        width: 100%;
+               
+        ul {
+           padding: 0;
+           margin: 0; 
+           list-style: none;
+           display: inline-block;
+            
+           li {
+               float: left;
+                padding: 0 10px;
+           }
+            
+           li.last {
+               float:right;
+           } 
+        }
+    } 
+}
+
+.section {
+    width:  ~"calc(100% - 30px)";
+    min-height: ~"calc(100% - 130px)";
+    padding: 20px 10px 0 10px;
+}
+
+.footer {
+    width:  ~"calc(100% - 10px)";   
+    min-height: 25px;
+    .wrapper {
+        padding-left: 10px; 
+    }
+    
+    .systemtime {
+	    float: right;
+	    width: ~"calc(100% - 650px)"; 
+	    text-align: right;
+	    padding-right: 10px;
+    }
+}
+
+.ui-tabs-anchor:focus {
+    outline: none;
+}
+
+.ui-accordion-header:focus {
+    outline: none;
+}
+
+input {
+    border-top-left-radius: 5px;    
+    border-top-right-radius: 5px;   
+    border-bottom-left-radius: 5px; 
+    border-bottom-right-radius: 5px;
+    
+	:focus {
+	    border-color: lime;
+	}    
+}
+
+textarea {
+    border-top-left-radius: 5px;    
+    border-top-right-radius: 5px;   
+    border-bottom-left-radius: 5px; 
+    border-bottom-right-radius: 5px;
+    
+	&:focus {
+	    border-color: lime;
+	}    
+}
+
+select{
+	width: 150px;
+	
+	&:focus {
+	    border-color: lime;
+	}	
+}
+
+button:focus {
+    outline: none;
+}
+
+@import "progress.less";
+

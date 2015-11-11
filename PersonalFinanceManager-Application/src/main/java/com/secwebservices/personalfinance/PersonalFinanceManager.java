@@ -2,6 +2,7 @@ package com.secwebservices.personalfinance;
 
 import java.io.File;
 
+import org.apache.catalina.Context;
 import org.apache.catalina.startup.Tomcat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +25,13 @@ public class PersonalFinanceManager {
 
         tomcat.setPort(Integer.valueOf(webPort));
 
-        tomcat.addWebapp("/", new File(webappDirLocation).getAbsolutePath());
+        tomcat.start();
+        
+        Context ctx = tomcat.addWebapp("/", new File(webappDirLocation).getAbsolutePath());
+        ctx.setSessionTimeout(2592000);
         logger.info("configuring app with basedir: " + new File(webappDirLocation).getAbsolutePath());
 
-        tomcat.start();
+
         tomcat.getServer().await();
     }	
 

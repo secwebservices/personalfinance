@@ -1,0 +1,43 @@
+<html id="htmlTop">
+<head>
+<title>Personal Finanace Manager</title>
+
+<script src="./dist/webapp.js"></script>
+
+<link rel="stylesheet" type="text/css" data-bind="attr: {href: 'https://code.jquery.com/ui/1.11.4/themes/' + uiTheme() + '/jquery-ui.css' }">
+
+<link rel="stylesheet" type="text/css" href = "/css/default.css"> 
+
+</head>
+
+<body class="ui-widget ui-content">
+	<div class="header ui-widget-header ui-corner-top">
+	    <div class="wrapper">
+            <div class="themechooser">
+                <label style="margin: 0 5px;">THEME:</label> 
+                <select data-bind="options: uiThemes, optionsText: 'label', optionsValue: 'value', value: uiTheme"></select>        
+            </div>
+            <div class="title">
+                <h2>Personal Finance Manager</h2>	       
+	        </div>
+            <div class="navigation" data-bind="template : {name: 'top_menu', data: $data}">
+
+	        </div>
+	    </div>
+	</div>
+	<div class="section ui-widget-content ui-border-left ui-border-right">
+		<div class="wrapper viewpoint">
+			
+		</div>	
+	</div>
+
+	<div class="footer ui-widget-content ui-corner-bottom">
+		<div class="wrapper">
+		  <span>&copy;2015 Security Web Services</span>
+		  <div class="systemtime"><span>Server Time: </span><span data-bind="text: servertime"></span></div>	
+		</div>
+	</div>
+	<div class="userdialog" style="display:none"></div>
+</body>
+
+</html>

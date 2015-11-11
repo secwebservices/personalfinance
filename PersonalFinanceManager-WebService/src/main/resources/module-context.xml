@@ -17,9 +17,9 @@
         http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
         http://www.springframework.org/schema/mvc 
         http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd">
-        
+            
    <bean id="userFilter" class="com.secwebservices.filter.UserFilter">
         <property name="sessionFactory" ref="sessionFactory"></property>
    </bean>
-      
+            
 </beans>

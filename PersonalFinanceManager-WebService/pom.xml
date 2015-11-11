@@ -10,7 +10,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>SecWebServices</groupId>
+            <groupId>com.secwebservices</groupId>
             <artifactId>PersonalFinanceManager-DataManager</artifactId>
             <version>${project.version}</version>
         </dependency>

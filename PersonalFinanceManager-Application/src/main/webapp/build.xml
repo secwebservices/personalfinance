@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Ant Called Grunt" default="clean" basedir=".">
+	<target name="clean">
+		<exec executable="grunt" dir="${basedir}" outputproperty="log">
+			<arg value="--v"/>
+			<arg value="clean"/>
+		</exec>
+
+		<echo message="${log}"/>
+		<condition property="onSuccess">
+			<matches pattern="Done, without errors." string="${log}"/>
+		</condition>
+		<fail message="Grunt failed!" unless="onSuccess"/>
+	</target>
+	<target name="build">
+		<exec executable="grunt" dir="${basedir}" outputproperty="log">
+			<arg value="--v"/>
+			<arg value="build"/>
+		</exec>
+
+		<echo message="${log}"/>
+		<condition property="onSuccess">
+			<matches pattern="Done, without errors." string="${log}"/>
+		</condition>
+		<fail message="Grunt failed!" unless="onSuccess"/>
+	</target>
+	<target name="package">
+		<exec executable="grunt" dir="${basedir}" outputproperty="log">
+			<arg value="--v"/>
+			<arg value="package"/>
+		</exec>
+
+		<echo message="${log}"/>
+		<condition property="onSuccess">
+			<matches pattern="Done, without errors." string="${log}"/>
+		</condition>
+		<fail message="Grunt failed!" unless="onSuccess"/>
+	</target>
+</project>
