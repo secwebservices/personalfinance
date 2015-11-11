@@ -21,5 +21,9 @@
    <bean id="userFilter" class="com.secwebservices.filter.UserFilter">
         <property name="sessionFactory" ref="sessionFactory"></property>
    </bean>
+         
+   <bean id="accountFilter" class="com.secwebservices.filter.AccountFilter">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+   </bean>          
             
 </beans>

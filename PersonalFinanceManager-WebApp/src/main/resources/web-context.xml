@@ -14,8 +14,5 @@
         http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
         http://www.springframework.org/schema/mvc 
         http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd">
-    
-    <!-- ========================== Properties Files ================================ -->
-    <context:property-placeholder location="classpath:jdbc.properties,classpath:config.properties" />
-    
+        
 </beans>

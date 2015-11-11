@@ -57,7 +57,48 @@
         </dependency>
 
 	</dependencies>
-
+	<profiles>
+		<profile>
+			<id>env-prod</id>
+			<activation>
+				<property>
+					<name>env</name>
+					<value>prod</value>
+				</property>
+			</activation>
+			<properties>
+				<env-artifact-id>prod</env-artifact-id>
+				<env-resources-dir>prod/resources</env-resources-dir>
+			</properties>
+		</profile>
+		<profile>
+			<id>env-staging</id>
+			<activation>
+				<property>
+					<name>env</name>
+					<value>staging</value>
+				</property>
+			</activation>
+			<properties>
+				<env-artifact-id>staging</env-artifact-id>
+				<env-resources-dir>staging/resources</env-resources-dir>
+			</properties>
+		</profile>
+		<profile>
+			<id>env-local</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+				<property>
+					<name>env</name>
+					<value>local</value>
+				</property>
+			</activation>
+			<properties>
+				<env-artifact-id>local</env-artifact-id>
+				<env-resources-dir>local/resources</env-resources-dir>
+			</properties>
+		</profile>
+	</profiles> 
 	<build>
 		<plugins>
 			<plugin>
@@ -90,6 +131,9 @@
             <resource>
                 <directory>src/main/resources</directory>
             </resource>
+            <resource>
+                <directory>src/main/env/${env-resources-dir}</directory>
+            </resource>            
         </resources>		
 	</build>
 </project>

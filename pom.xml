@@ -26,7 +26,6 @@
 		<module>PersonalFinanceManager-DataManager</module>
 		<module>PersonalFinanceManager-WebService</module>
 		<module>PersonalFinanceManager-WebApp</module>
-		<module>PersonalFinanceManager-Application</module>
 	</modules>
 
 	<properties>
