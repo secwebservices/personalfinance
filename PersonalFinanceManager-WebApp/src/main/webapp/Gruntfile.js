@@ -80,7 +80,11 @@ module.exports = function(grunt) {
         'less'
     ]);
 
-    grunt.registerTask('default', [
+    grunt.registerTask('clean', [
+        'less', 'requirejs'
+    ]);    
+    
+    grunt.registerTask('build', [
         'less', 'jshint', 'requirejs'
     ]);
     
