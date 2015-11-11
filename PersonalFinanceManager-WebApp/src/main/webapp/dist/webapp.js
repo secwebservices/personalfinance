@@ -38301,9 +38301,13 @@ define('controller/user/UserController',['jquery',
     
     UserController.prototype.userStore = sessionStorage;
 
-    UserController.prototype.sessionDialog = undefined;
+    UserController.prototype.sessionTimeoutDialog = undefined;
     
-    UserController.prototype.sessionTemplate = undefined;
+    UserController.prototype.sessionTimeoutTemplate = undefined;
+    
+    UserController.prototype.sessionExpiredDialog = undefined;
+
+    UserController.prototype.sessionExpiredTemplate = undefined;
     
     UserController.prototype.timeoutInterval = undefined;
     
@@ -38388,7 +38392,9 @@ define('controller/user/UserController',['jquery',
 
         self.user = self.applicationContext().user;
         
-        self.sessionTemplate = TemplateManager.getTemplate('session_timeout');
+        self.sessionTimeoutTemplate = TemplateManager.getTemplate('session_timeout');
+        
+        self.sessionExpiredTemplate = TemplateManager.getTemplate('session_expired');
         
         if(self.userStore.getItem('user')){
         	user = JSON.parse(self.userStore.getItem('user'));
@@ -38464,7 +38470,7 @@ define('controller/user/UserController',['jquery',
             $('body').append(self.sessionTemplate);        	
         }
 
-        self.sessionDialog = $('.sessionTimeoutDialog').dialog(
+        self.sessionTimeoutDialog = $('.sessionTimeoutDialog').dialog(
         {
             title : 'Notification',
             modal : true,
@@ -38507,6 +38513,63 @@ define('controller/user/UserController',['jquery',
 
     };
     
+    
+    /**
+     * sessionExpired
+     */
+    UserController.prototype.sessionExpired = function() {
+        var self = this;
+    	
+        self.userSessionHasTimedout = true;
+        self.logger.debug('UserController.prototype.sessionExpired', self.user);
+
+        if($('.sessionExpiredDialog').length === 0){
+            $('body').append(self.sessionTemplate);        	
+        }
+
+        self.sessionExpiredDialog = $('.sessionExpiredDialog').dialog(
+        {
+            title : 'Notification',
+            modal : true,
+            width : '420px',
+            position :
+            {
+                my : 'center',
+                at : 'center',
+                of : '.section'
+            },
+            buttons :
+            {
+                'Ok' : function() {
+                    $(this).dialog('close');
+                    self.logoutRequest();
+                },
+                'Cancel' : function() {
+                	self.userSessionHasTimedout = false;
+                	if(self.user){
+                    	self.userStore.setItem('user', JSON.stringify(ko.toJS(self.user)));                		
+                	}
+                    $(this).dialog('close');
+                }
+            },
+            close : function() {
+            	clearInterval(self.timeoutInterval);
+                $(this).dialog('destroy');
+                $('.sessionExpiredDialog').remove();
+            },
+            open : function() {
+            	self.timeleft = 60;
+            	$('.timeLeft').html(self.timeleft);
+            	clearInterval(self.timeoutInterval);
+
+            	self.timeoutInterval = setInterval(function(){
+            		self.logoutTimer();
+        		}, 1000);  
+            }
+        });
+
+    };    
+    
     UserController.prototype.logoutTimer = function() {
         var self = this;
 
@@ -38514,7 +38577,7 @@ define('controller/user/UserController',['jquery',
         $('.timeLeft').html(self.timeleft);
 
         if (self.timeleft === 0) {
-            self.sessionDialog.dialog('close');
+            self.sessionTimeoutDialog.dialog('close');
             self.logoutRequest();
         }
     };
