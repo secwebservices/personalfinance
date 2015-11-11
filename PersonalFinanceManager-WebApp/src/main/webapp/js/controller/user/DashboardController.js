@@ -10,7 +10,8 @@ define(['jquery',
         'Mediator',
         'view/IndexView',
         'view/DashboardView',
-        'controller/RouteController'], function($, ko, LoggerConfig, Mediator, IndexView, DashboardView, RouteController){
+        'controller/RouteController',
+        'TemplateManager'], function($, ko, LoggerConfig, Mediator, IndexView, DashboardView, RouteController, TemplateManager){
 	
     function DashboardController(config){
     	var self = this, indexView, dashboardView;
@@ -19,14 +20,12 @@ define(['jquery',
     	
     	indexView = new IndexView({
             /** the element to render the view on. */
-            element : '.viewpoint',
-            templateManager : config.templateManager
+            element : '.viewpoint'
         });
 
     	dashboardView = new DashboardView({
             /** the element to render the view on. */
             element : '.viewpoint',
-            templateManager : config.templateManager,
             applicationContext: self.applicationContext
     	});
         

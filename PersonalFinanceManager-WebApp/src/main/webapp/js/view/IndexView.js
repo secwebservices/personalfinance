@@ -6,8 +6,9 @@
 define(['model/IndexModel', 
         'knockoutjs',
         'LoggerConfig',
-        'Mediator'], 
-        function(IndexModel, ko, LoggerConfig, Mediator) {
+        'Mediator',
+        'TemplateManager'], 
+        function(IndexModel, ko, LoggerConfig, Mediator, TemplateManager) {
 
     /**
      * @constructor
@@ -27,10 +28,6 @@ define(['model/IndexModel',
      * @param element {object}
      */
     IndexView.prototype.element = undefined;
-    /**
-     * @param template {object}
-     */
-    IndexView.prototype.templateManager = undefined;
     
     IndexView.prototype.template = 'Index';
     
@@ -85,7 +82,7 @@ define(['model/IndexModel',
         try {
             $el = $(self.element);
             
-            templateData = self.templateManager.getTemplate(self.template);
+            templateData = TemplateManager.getTemplate(self.template);
             
             $el.html(templateData);
 
@@ -108,7 +105,7 @@ define(['model/IndexModel',
         
         try {
             $el = $(self.element);
-            self.templateManager.clearTemplate(self.template);
+            TemplateManager.clearTemplate(self.template);
             ko.cleanNode($el[0]);
             
             self.rendered = false;

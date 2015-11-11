@@ -7,7 +7,7 @@ define([ 'jquery',
          'knockoutjs',	
          'LoggerConfig',
          'Mediator',
-         'managers/TemplateManager',
+         'TemplateManager',
          'utilities/core/AjaxHandlers',
          'controller/user/UserController',
          'controller/user/DashboardController',
@@ -49,12 +49,10 @@ define([ 'jquery',
                 }     
 
                 dashboardController = new DashboardController({
-                	templateManager : TemplateManager,
                 	applicationContext: App.applicationContext
                 });
                 
                 userController = new UserController({
-                	templateManager : TemplateManager,
                 	applicationContext: App.applicationContext
                 });
                                 

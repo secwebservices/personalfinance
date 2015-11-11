@@ -6,8 +6,9 @@
 define([ 
         'knockoutjs',
         'LoggerConfig',
-        'Mediator'], 
-        function(ko, LoggerConfig, Mediator) {
+        'Mediator',
+        'TemplateManager'], 
+        function(ko, LoggerConfig, Mediator, TemplateManager) {
 
     /**
      * @constructor
@@ -27,10 +28,6 @@ define([
      * @param element {object}
      */
     DashboardView.prototype.element = undefined;
-    /**
-     * @param template {object}
-     */
-    DashboardView.prototype.templateManager = undefined;
     
     DashboardView.prototype.template = 'dashboard';
     
@@ -87,7 +84,7 @@ define([
         try {
             $el = $(self.element);
             
-            templateData = self.templateManager.getTemplate(self.template);
+            templateData = TemplateManager.getTemplate(self.template);
             
             $el.html(templateData);
 
@@ -108,7 +105,7 @@ define([
         
         try {
             $el = $(self.element);
-            self.templateManager.clearTemplate(self.template);
+            TemplateManager.clearTemplate(self.template);
             ko.cleanNode($el[0]);
             
             self.rendered = false;

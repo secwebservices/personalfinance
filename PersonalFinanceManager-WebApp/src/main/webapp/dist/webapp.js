@@ -35227,7 +35227,7 @@ define('Mediator',['jquery', 'LoggerConfig'], function ($, LoggerConfig) {
 /**
  * @author Robert “The Man” Suppenbach
  */
-define('managers/TemplateManager',['jquery',
+define('TemplateManager',['jquery',
         'knockoutjs',
         'LoggerConfig'], function ($, ko, LoggerConfig) {
     'use strict';
@@ -35778,8 +35778,9 @@ define('model/user/UserModel',['LoggerConfig',
 define('view/user/UserLoginView',['model/user/UserModel', 
         'knockoutjs',
         'LoggerConfig',
-        'Mediator'], 
-        function(UserModel, ko, LoggerConfig, Mediator) {
+        'Mediator',
+        'TemplateManager'], 
+        function(UserModel, ko, LoggerConfig, Mediator, TemplateManager) {
 
     /**
      * @constructor
@@ -35804,10 +35805,6 @@ define('view/user/UserLoginView',['model/user/UserModel',
      * @param element {object}
      */
     UserLoginView.prototype.element = undefined;
-    /**
-     * @param template {object}
-     */
-    UserLoginView.prototype.templateManager = undefined;
 
     UserLoginView.prototype.template = 'login';
     
@@ -35862,7 +35859,7 @@ define('view/user/UserLoginView',['model/user/UserModel',
         try {
             $el = $(self.element);
             
-            templateData = self.templateManager.getTemplate(self.template);
+            templateData = TemplateManager.getTemplate(self.template);
             
             $el.html(templateData).show();
             
@@ -35903,7 +35900,7 @@ define('view/user/UserLoginView',['model/user/UserModel',
             $el = $(self.element);
             $el.html('').hide();
             
-            self.templateManager.clearTemplate(self.template);
+            TemplateManager.clearTemplate(self.template);
             ko.cleanNode($el[0]);
             
             self.rendered = false;
@@ -35924,8 +35921,9 @@ define('view/user/UserLoginView',['model/user/UserModel',
 define('view/user/UserLogoutView',['model/user/UserModel', 
         'knockoutjs',
         'LoggerConfig',
-        'Mediator'], 
-        function(UserModel, ko, LoggerConfig, Mediator) {
+        'Mediator',
+        'TemplateManager'], 
+        function(UserModel, ko, LoggerConfig, Mediator, TemplateManager) {
 
     /**
      * @constructor
@@ -35950,10 +35948,6 @@ define('view/user/UserLogoutView',['model/user/UserModel',
      * @param element {object}
      */
     UserLogoutView.prototype.element = undefined;
-    /**
-     * @param template {object}
-     */
-    UserLogoutView.prototype.templateManager = undefined;
 
     UserLogoutView.prototype.template = 'logout';
     
@@ -36008,7 +36002,7 @@ define('view/user/UserLogoutView',['model/user/UserModel',
         try {
             $el = $(self.element);
             
-            templateData = self.templateManager.getTemplate(self.template);
+            templateData = TemplateManager.getTemplate(self.template);
 
             $el.html(templateData).show();
             
@@ -36042,7 +36036,7 @@ define('view/user/UserLogoutView',['model/user/UserModel',
         	$el = $(self.element);
             $el.html('').hide();
 
-            self.templateManager.clearTemplate(self.template);
+            TemplateManager.clearTemplate(self.template);
             ko.cleanNode($el[0]);
             
             self.rendered = false;
@@ -38259,7 +38253,8 @@ define('controller/user/UserController',['jquery',
         'Mediator',
         'view/user/UserLoginView',
         'view/user/UserLogoutView',
-        'controller/RouteController'], function($, ko, LoggerConfig, Nediator, UserLoginView, UserLogoutView, RouteController){
+        'controller/RouteController',
+        'TemplateManager'], function($, ko, LoggerConfig, Nediator, UserLoginView, UserLogoutView, RouteController, TemplateManager){
 	
     function UserController(config){
     	var self = this, userLoginView, userLogoutView;
@@ -38269,14 +38264,12 @@ define('controller/user/UserController',['jquery',
     	userLoginView = new UserLoginView({
             /** the element to render the view on. */
             element : '.userdialog',
-            templateManager : config.templateManager,
             user: config.user
         });
 
         userLogoutView = new UserLogoutView({
             /** the element to render the view on. */
             element : '.userdialog',
-            templateManager : config.templateManager,
             user: config.user
         });
         
@@ -38310,9 +38303,9 @@ define('controller/user/UserController',['jquery',
 
     UserController.prototype.sessionDialog = undefined;
     
-    UserController.prototype.timeoutInterval = undefined;
+    UserController.prototype.sessionTemplate = undefined;
     
-    UserController.prototype.templateManager = undefined;
+    UserController.prototype.timeoutInterval = undefined;
     
     UserController.prototype.loginRequest = function(message){
     	var self = this, loginRequest = message.loginRequest;
@@ -38395,6 +38388,8 @@ define('controller/user/UserController',['jquery',
 
         self.user = self.applicationContext().user;
         
+        self.sessionTemplate = TemplateManager.getTemplate('session_timeout');
+        
         if(self.userStore.getItem('user')){
         	user = JSON.parse(self.userStore.getItem('user'));
         	self.user(user);
@@ -38467,7 +38462,7 @@ define('controller/user/UserController',['jquery',
         self.logger.debug('UserController.prototype.sessionTimeout', self.user);
 
         if($('.sessionTimeoutDialog').length === 0){
-            $('body').append(self.templateManager.getTemplate('session_timeout'));        	
+            $('body').append(self.sessionTemplate);        	
         }
 
         self.sessionDialog = $('.sessionTimeoutDialog').dialog(
@@ -38576,8 +38571,9 @@ define('model/IndexModel',['LoggerConfig',
 define('view/IndexView',['model/IndexModel', 
         'knockoutjs',
         'LoggerConfig',
-        'Mediator'], 
-        function(IndexModel, ko, LoggerConfig, Mediator) {
+        'Mediator',
+        'TemplateManager'], 
+        function(IndexModel, ko, LoggerConfig, Mediator, TemplateManager) {
 
     /**
      * @constructor
@@ -38597,10 +38593,6 @@ define('view/IndexView',['model/IndexModel',
      * @param element {object}
      */
     IndexView.prototype.element = undefined;
-    /**
-     * @param template {object}
-     */
-    IndexView.prototype.templateManager = undefined;
     
     IndexView.prototype.template = 'Index';
     
@@ -38655,7 +38647,7 @@ define('view/IndexView',['model/IndexModel',
         try {
             $el = $(self.element);
             
-            templateData = self.templateManager.getTemplate(self.template);
+            templateData = TemplateManager.getTemplate(self.template);
             
             $el.html(templateData);
 
@@ -38678,7 +38670,7 @@ define('view/IndexView',['model/IndexModel',
         
         try {
             $el = $(self.element);
-            self.templateManager.clearTemplate(self.template);
+            TemplateManager.clearTemplate(self.template);
             ko.cleanNode($el[0]);
             
             self.rendered = false;
@@ -38699,8 +38691,9 @@ define('view/IndexView',['model/IndexModel',
 define('view/DashboardView',[ 
         'knockoutjs',
         'LoggerConfig',
-        'Mediator'], 
-        function(ko, LoggerConfig, Mediator) {
+        'Mediator',
+        'TemplateManager'], 
+        function(ko, LoggerConfig, Mediator, TemplateManager) {
 
     /**
      * @constructor
@@ -38720,10 +38713,6 @@ define('view/DashboardView',[
      * @param element {object}
      */
     DashboardView.prototype.element = undefined;
-    /**
-     * @param template {object}
-     */
-    DashboardView.prototype.templateManager = undefined;
     
     DashboardView.prototype.template = 'dashboard';
     
@@ -38780,7 +38769,7 @@ define('view/DashboardView',[
         try {
             $el = $(self.element);
             
-            templateData = self.templateManager.getTemplate(self.template);
+            templateData = TemplateManager.getTemplate(self.template);
             
             $el.html(templateData);
 
@@ -38801,7 +38790,7 @@ define('view/DashboardView',[
         
         try {
             $el = $(self.element);
-            self.templateManager.clearTemplate(self.template);
+            TemplateManager.clearTemplate(self.template);
             ko.cleanNode($el[0]);
             
             self.rendered = false;
@@ -38826,7 +38815,8 @@ define('controller/user/DashboardController',['jquery',
         'Mediator',
         'view/IndexView',
         'view/DashboardView',
-        'controller/RouteController'], function($, ko, LoggerConfig, Mediator, IndexView, DashboardView, RouteController){
+        'controller/RouteController',
+        'TemplateManager'], function($, ko, LoggerConfig, Mediator, IndexView, DashboardView, RouteController, TemplateManager){
 	
     function DashboardController(config){
     	var self = this, indexView, dashboardView;
@@ -38835,14 +38825,12 @@ define('controller/user/DashboardController',['jquery',
     	
     	indexView = new IndexView({
             /** the element to render the view on. */
-            element : '.viewpoint',
-            templateManager : config.templateManager
+            element : '.viewpoint'
         });
 
     	dashboardView = new DashboardView({
             /** the element to render the view on. */
             element : '.viewpoint',
-            templateManager : config.templateManager,
             applicationContext: self.applicationContext
     	});
         
@@ -38894,7 +38882,7 @@ define('core/pfmain',[ 'jquery',
          'knockoutjs',	
          'LoggerConfig',
          'Mediator',
-         'managers/TemplateManager',
+         'TemplateManager',
          'utilities/core/AjaxHandlers',
          'controller/user/UserController',
          'controller/user/DashboardController',
@@ -38936,12 +38924,10 @@ define('core/pfmain',[ 'jquery',
                 }     
 
                 dashboardController = new DashboardController({
-                	templateManager : TemplateManager,
                 	applicationContext: App.applicationContext
                 });
                 
                 userController = new UserController({
-                	templateManager : TemplateManager,
                 	applicationContext: App.applicationContext
                 });
                                 

@@ -6,8 +6,9 @@
 define(['model/user/UserModel', 
         'knockoutjs',
         'LoggerConfig',
-        'Mediator'], 
-        function(UserModel, ko, LoggerConfig, Mediator) {
+        'Mediator',
+        'TemplateManager'], 
+        function(UserModel, ko, LoggerConfig, Mediator, TemplateManager) {
 
     /**
      * @constructor
@@ -32,10 +33,6 @@ define(['model/user/UserModel',
      * @param element {object}
      */
     UserLogoutView.prototype.element = undefined;
-    /**
-     * @param template {object}
-     */
-    UserLogoutView.prototype.templateManager = undefined;
 
     UserLogoutView.prototype.template = 'logout';
     
@@ -90,7 +87,7 @@ define(['model/user/UserModel',
         try {
             $el = $(self.element);
             
-            templateData = self.templateManager.getTemplate(self.template);
+            templateData = TemplateManager.getTemplate(self.template);
 
             $el.html(templateData).show();
             
@@ -124,7 +121,7 @@ define(['model/user/UserModel',
         	$el = $(self.element);
             $el.html('').hide();
 
-            self.templateManager.clearTemplate(self.template);
+            TemplateManager.clearTemplate(self.template);
             ko.cleanNode($el[0]);
             
             self.rendered = false;

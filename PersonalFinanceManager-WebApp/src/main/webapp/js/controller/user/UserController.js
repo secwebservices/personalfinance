@@ -10,7 +10,8 @@ define(['jquery',
         'Mediator',
         'view/user/UserLoginView',
         'view/user/UserLogoutView',
-        'controller/RouteController'], function($, ko, LoggerConfig, Nediator, UserLoginView, UserLogoutView, RouteController){
+        'controller/RouteController',
+        'TemplateManager'], function($, ko, LoggerConfig, Nediator, UserLoginView, UserLogoutView, RouteController, TemplateManager){
 	
     function UserController(config){
     	var self = this, userLoginView, userLogoutView;
@@ -20,14 +21,12 @@ define(['jquery',
     	userLoginView = new UserLoginView({
             /** the element to render the view on. */
             element : '.userdialog',
-            templateManager : config.templateManager,
             user: config.user
         });
 
         userLogoutView = new UserLogoutView({
             /** the element to render the view on. */
             element : '.userdialog',
-            templateManager : config.templateManager,
             user: config.user
         });
         
@@ -61,9 +60,9 @@ define(['jquery',
 
     UserController.prototype.sessionDialog = undefined;
     
-    UserController.prototype.timeoutInterval = undefined;
+    UserController.prototype.sessionTemplate = undefined;
     
-    UserController.prototype.templateManager = undefined;
+    UserController.prototype.timeoutInterval = undefined;
     
     UserController.prototype.loginRequest = function(message){
     	var self = this, loginRequest = message.loginRequest;
@@ -146,6 +145,8 @@ define(['jquery',
 
         self.user = self.applicationContext().user;
         
+        self.sessionTemplate = TemplateManager.getTemplate('session_timeout');
+        
         if(self.userStore.getItem('user')){
         	user = JSON.parse(self.userStore.getItem('user'));
         	self.user(user);
@@ -218,7 +219,7 @@ define(['jquery',
         self.logger.debug('UserController.prototype.sessionTimeout', self.user);
 
         if($('.sessionTimeoutDialog').length === 0){
-            $('body').append(self.templateManager.getTemplate('session_timeout'));        	
+            $('body').append(self.sessionTemplate);        	
         }
 
         self.sessionDialog = $('.sessionTimeoutDialog').dialog(
