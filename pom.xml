@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>SecWebServices</groupId>
+	<groupId>com.secwebservices</groupId>
 	<artifactId>PersonalFinanceManager</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<organization>
@@ -13,8 +13,8 @@
 		<developer>
 			<id>robert.suppenbach</id>
 			<name>Robert Suppenbach</name>
-			<organization>Global Prairie</organization>
-			<organizationUrl>http://www.global-prairie.com</organizationUrl>
+			<organization>Security Web Services</organization>
+			<organizationUrl>http://www.secwebservices.com</organizationUrl>
 			<roles>
 				<role>developer</role>
 			</roles>
@@ -26,6 +26,7 @@
 		<module>PersonalFinanceManager-DataManager</module>
 		<module>PersonalFinanceManager-WebService</module>
 		<module>PersonalFinanceManager-WebApp</module>
+		<module>PersonalFinanceManager-Application</module>
 	</modules>
 
 	<properties>
