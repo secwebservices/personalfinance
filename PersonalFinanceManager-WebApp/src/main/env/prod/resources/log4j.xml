@@ -10,9 +10,16 @@
         </layout>
     </appender>
 
-             
+    <appender name="ErrorLogs" class="com.aranya.kaya.common.util.SeparateLogFileAppender">
+        <param name="Directory" value="/temp/logs/global-prairie/rssgnome" />
+        <param name="Threshold" value="ERROR" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%-4r [%t] %-5p %c %x - %m%n" />
+        </layout>
+    </appender>
+                  
     <root> 
-        <priority value ="info" />
+        <priority value ="error" />
         <appender-ref ref="Console" />
         <appender-ref ref="ErrorLogs" />
     </root>
