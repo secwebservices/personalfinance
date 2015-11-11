@@ -104,8 +104,5 @@
 			</resource>
 		</resources>
 	</build>
-
-
-
 	<packaging>war</packaging>
 </project>
