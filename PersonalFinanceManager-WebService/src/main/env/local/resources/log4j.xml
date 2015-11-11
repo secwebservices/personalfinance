@@ -17,10 +17,6 @@
             <param name="ConversionPattern" value="%-4r [%t] %-5p %c %x - %m%n" />
         </layout>
     </appender>
-    
-    <logger name="com.aranya.kaya">
-        <level value="info"/>
-    </logger>
 
     <logger name="com.secwebservices.utilities.GsonHttpMessageConverter">
         <level value="error"/>
@@ -33,24 +29,7 @@
     <logger name="org.springframework">
         <level value="info"/>
     </logger>
-    
-    <logger name="httpclient.wire">
-        <level value="info"/>
-    </logger>
-
-    <logger name="org.hibernate">
-        <level value="trace"/>
-    </logger>
-
-    <logger name="org.hibernate.type">
-        <level value="trace"/>
-    </logger>
-         
-    <logger name="com.mchange.v2">
-    	<level value="info" />
-    </logger> 
-         
-         
+                  
     <root> 
         <priority value ="debug" />
         <appender-ref ref="Console" />

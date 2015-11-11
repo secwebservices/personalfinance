@@ -10,49 +10,9 @@
         </layout>
     </appender>
 
-    <appender name="ErrorLogs" class="com.aranya.kaya.common.util.SeparateLogFileAppender">
-        <param name="Directory" value="/temp/logs/global-prairie/rssgnome" />
-        <param name="Threshold" value="ERROR" />
-        <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%-4r [%t] %-5p %c %x - %m%n" />
-        </layout>
-    </appender>
-    
-    <logger name="com.aranya.kaya">
-        <level value="info"/>
-    </logger>
-
-    <logger name="com.secwebservices.utilities.GsonHttpMessageConverter">
-        <level value="error"/>
-    </logger>
-
-    <logger name="com.secwebservices.api.controller.Ping">
-        <level value="error"/>
-    </logger>
-    
-    <logger name="org.springframework">
-        <level value="info"/>
-    </logger>
-    
-    <logger name="httpclient.wire">
-        <level value="info"/>
-    </logger>
-
-    <logger name="org.hibernate">
-        <level value="trace"/>
-    </logger>
-
-    <logger name="org.hibernate.type">
-        <level value="trace"/>
-    </logger>
-         
-    <logger name="com.mchange.v2">
-    	<level value="info" />
-    </logger> 
-         
-         
+             
     <root> 
-        <priority value ="debug" />
+        <priority value ="info" />
         <appender-ref ref="Console" />
         <appender-ref ref="ErrorLogs" />
     </root>
