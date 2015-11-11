@@ -38435,13 +38435,12 @@ define('controller/user/UserController',['jquery',
                 async:false,
                 global: false,
                 success: function(data, status, jqXHR){
-
                     self.applicationContext().servertime(data.timestamp);
-                	if(jqXHR.status == 401){
-                		self.sessionTimeout();
-                	}
                 },
                 error: function(jqXHR, status, error){
+                	if(jqXHR.status == 401){
+                		self.logoutRequest();
+                	}
                 	self.userStore.removeItem('user');
                 },
                 dataType: 'json'
@@ -38479,8 +38478,8 @@ define('controller/user/UserController',['jquery',
             buttons :
             {
                 'Ok' : function() {
-                    self.logoutRequest();
                     $(this).dialog('close');
+                    self.logoutRequest();
                 },
                 'Cancel' : function() {
                 	self.userSessionHasTimedout = false;
@@ -38491,8 +38490,9 @@ define('controller/user/UserController',['jquery',
                 }
             },
             close : function() {
+            	clearInterval(self.timeoutInterval);
                 $(this).dialog('destroy');
-                $('#sessionTimeoutDialog').remove();
+                $('.sessionTimeoutDialog').remove();
             },
             open : function() {
             	self.timeleft = 60;
