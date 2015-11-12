@@ -4,9 +4,17 @@
 	<parent>
 		<groupId>com.secwebservices</groupId>
 		<artifactId>PersonalFinanceManager</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>1.0.1</version>
 	</parent>
 	<artifactId>PersonalFinanceManager-WebApp</artifactId>
+	
+	<properties>
+	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.build.timestamp.format>yyyyMMdd</maven.build.timestamp.format>
+        <timestamp>${maven.build.timestamp}</timestamp>
+	</properties>
+	
+	
 	<dependencies>
 		<dependency>
 			<groupId>com.secwebservices</groupId>
@@ -83,7 +91,10 @@
 						<phase>process-sources</phase>
 						<configuration>
 							<target name="webapp grunt build">
-								<ant dir="src/main/webapp" target="build" />
+							     <property name="buildId" value="${timestamp}"/>
+							     <property name="versionId" value="${project.version}"/>
+							     <property name="enviromentId" value="${env-artifact-id}"/>
+						         <ant dir="src/main/webapp" target="build" />
 							</target>
 
 						</configuration>
@@ -98,11 +109,13 @@
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
-			</resource>
+			</resource>		
 			<resource>
 				<directory>src/main/env/${env-resources-dir}</directory>
 			</resource>
 		</resources>
+		
+		
 	</build>
 	<packaging>war</packaging>
 </project>

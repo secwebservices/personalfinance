@@ -4,6 +4,9 @@
 		<exec executable="grunt" dir="${basedir}" outputproperty="log">
 			<arg value="--v"/>
 			<arg value="clean"/>
+			<arg value="--buildId=${buildId}"/>
+			<arg value="--versionId=${versionId}"/>
+			<arg value="--enviromentId=${enviromentId}"/>
 		</exec>
 
 		<echo message="${log}"/>
@@ -12,10 +15,13 @@
 		</condition>
 		<fail message="Grunt failed!" unless="onSuccess"/>
 	</target>
-	<target name="build">
+	<target name="build">	
 		<exec executable="grunt" dir="${basedir}" outputproperty="log">
 			<arg value="--v"/>
 			<arg value="build"/>
+            <arg value="--buildId=${buildId}"/>
+            <arg value="--versionId=${versionId}"/>
+			<arg value="--enviromentId=${enviromentId}"/>
 		</exec>
 
 		<echo message="${log}"/>
@@ -24,10 +30,13 @@
 		</condition>
 		<fail message="Grunt failed!" unless="onSuccess"/>
 	</target>
-	<target name="package">
+	<target name="package">	
 		<exec executable="grunt" dir="${basedir}" outputproperty="log">
 			<arg value="--v"/>
 			<arg value="package"/>
+            <arg value="buildId=${buildId}"/>
+            <arg value="--versionId=${versionId}"/>	
+			<arg value="--enviromentId=${enviromentId}"/>
 		</exec>
 
 		<echo message="${log}"/>

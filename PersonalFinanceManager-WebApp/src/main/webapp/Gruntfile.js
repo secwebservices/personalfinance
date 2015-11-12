@@ -6,7 +6,7 @@ module.exports = function(grunt) {
             files : [
                 'test/**/*.html'
             ]
-        },
+        },        
         jshint : {
             files : [
                 'Gruntfile.js', 'app.js', 'js/**/*.js', '!js/lib/**/*.js'
@@ -22,6 +22,34 @@ module.exports = function(grunt) {
                 }
             }
         },
+        'string-replace': {
+            dist: {
+              files: {
+                'js/config.js': '../resources/config.js'
+              },
+              options: {
+                replacements: [{
+                  pattern: "${buildId}",
+                  replacement: function (match, p1) {
+                    return grunt.option('buildId');
+                  }
+                },
+                {
+                      pattern: "${versionId}",
+                      replacement: function (match, p1) {
+                          return grunt.option('versionId');
+                      }
+                  },
+                {
+                      pattern: "${enviromentId}",
+                      replacement: function (match, p1) {
+                          return grunt.option('enviromentId');
+                      }
+                  }
+                ]
+              }
+            }
+          },
         requirejs : {
             compile : {
                 options : {
@@ -68,28 +96,26 @@ module.exports = function(grunt) {
 
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-string-replace');
     grunt.loadNpmTasks('grunt-contrib-less');
     grunt.loadNpmTasks('grunt-contrib-requirejs');
     grunt.loadNpmTasks('grunt-contrib-uglify');
+
     
     grunt.registerTask('test', [
         'jshint', 'qunit'
     ]);
 
-    grunt.registerTask('lesscss', [
-        'less'
-    ]);
-
     grunt.registerTask('clean', [
-        'less', 'requirejs'
+        'string-replace', 'less', 'requirejs'
     ]);    
     
     grunt.registerTask('build', [
-        'less', 'jshint', 'requirejs'
+        'jshint', 'clean'
     ]);
     
     grunt.registerTask('package', [
-        'less', 'jshint', 'requirejs', 'uglify'
+        'build', 'uglify'
     ]);
 
 };

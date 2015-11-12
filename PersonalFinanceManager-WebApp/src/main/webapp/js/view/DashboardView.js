@@ -79,7 +79,7 @@ define([
     DashboardView.prototype.render = function() {
         var self = this, $el, templateData;
 
-        self.logger.debug("DashboardView.prototype.render");
+        self.logger.debug('DashboardView Render Request');
 
         try {
             $el = $(self.element);
@@ -93,7 +93,7 @@ define([
             
             self.rendered = true;            
         } catch (e) {
-            self.logger.error('DashboardView.prototype.render', e);
+            self.logger.error('DashboardView Render Request', e);
         }
 
     };
@@ -101,7 +101,7 @@ define([
     DashboardView.prototype.derender = function() {
         var self = this, $el;
 
-        self.logger.debug("DashboardView.prototype.derender");
+        self.logger.debug('DashboardView Derender Request');
         
         try {
             $el = $(self.element);
@@ -110,7 +110,7 @@ define([
             
             self.rendered = false;
         } catch (e) {
-            self.logger.error('DashboardView.prototype.derender', e);
+            self.logger.error('DashboardView Derender Request', e);
         }        
     };
 

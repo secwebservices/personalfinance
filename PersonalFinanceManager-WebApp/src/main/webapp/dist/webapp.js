@@ -17877,12 +17877,14 @@ define('LoggerConfig',[ "lib/log4javascript" ], function(log4javascript) {
 
 /**
  * @author Robert “The Man” Suppenbach
+ * @note 
+ *      DERIVED FILE
+ *      ONLY MODIFY THE VERSION OF THIS FILE IN THE /src/main/resources folder.
  */
-define('core/globals',['jquery', 'LoggerConfig'], function($, LoggerConfig){
+define('core/config',['jquery', 'LoggerConfig'], function($, LoggerConfig){
     var logger = new LoggerConfig().getLogger('globals.js'),
-    Globals = {
-        uiThemes: [
-                   {label:"Black Tie", value:"black-tie"},
+    config = {
+        uiThemes: [{label:"Black Tie", value:"black-tie"},
                    {label:"Blitzer", value:"blitzer"},
                    {label:"Cupertino", value:"cupertino"},
                    {label:"Dark Hive", value:"dark-hive"},
@@ -17897,31 +17899,69 @@ define('core/globals',['jquery', 'LoggerConfig'], function($, LoggerConfig){
                    {label:"Smoothness", value:"smoothness"},
                    {label:"Start", value:"start"},
                    {label:"Trontastic", value:"trontastic"},
-                   {label:"Vader", value:"vader"}],    	
+                   {label:"Vader", value:"vader"}],
+       sessionTimeOutTime: (1000 * 60 * 5),
+       build: "20151112",
+       version: "1.0.1",
+       environment: "local"
     };
     
-    $.extend(window, Globals);
+    // overrides for local env incremental builds
+    if(config.build.indexOf("buildId") > 0){
+        var today = new Date();
+        config.build = today.getFullYear() + "" + today.getDate() + "" + today.getDay();
+    }
+    if(config.version.indexOf("versionId") > 0){
+        config.version = "Local";
+    }
+    if(config.environment.indexOf("enviromentId") > 0){
+        config.environment = "DEV";
+    }
     
-    Array.prototype.contains = function(elem) {
-        var i;
+    // make the configuration globally available.
+    $.extend(window, config);
+        
+    return config;
+});
+/*jslint browser: true, devel: true */
 
-        if ( $.isArray(this) ) {
-            if ( $.inArray(elem, this) > -1 ) {
-                return true;
-            }
-        }
-        for ( i in this ) {
-            if ( $.isArray(this[i]) ) {
-                if ( $.inArray(elem, this[i]) > -1 ) {
+/**
+ * @author Robert “The Man” Suppenbach
+ */
+define('utilities/core/JavascriptExtensions',['jquery'], function ($) {
+    'use strict';
+    
+    var instance;
+    function init() {
+    	
+        Array.prototype.contains = function(elem) {
+            var i;
+
+            if ( $.isArray(this) ) {
+                if ( $.inArray(elem, this) > -1 ) {
                     return true;
                 }
             }
-        }
+            for ( i in this ) {
+                if ( $.isArray(this[i]) ) {
+                    if ( $.inArray(elem, this[i]) > -1 ) {
+                        return true;
+                    }
+                }
+            }
 
-        return false;
-    };
+            return false;
+        };
+    }
     
-    return Globals;
+    return (function () {
+        if (!instance) {
+            instance = init();
+        }
+        return instance;
+    }());  
+            
+            
 });
 /*!
  * Knockout JavaScript library v3.3.0
@@ -35875,7 +35915,7 @@ define('view/user/UserLoginView',['model/user/UserModel',
     UserLoginView.prototype.render = function() {
         var self = this, $el, templateData;
 
-        self.logger.debug("UserLoginView.prototype.render");
+        self.logger.debug('UserLoginView Render Request');
 
         try {
             $el = $(self.element);
@@ -35905,7 +35945,7 @@ define('view/user/UserLoginView',['model/user/UserModel',
 
             self.rendered = true;
         } catch (e) {
-            self.logger.error('UserLoginView.prototype.render', e);
+            self.logger.error('UserLoginView Render Request', e);
         }
 
     };
@@ -35913,7 +35953,7 @@ define('view/user/UserLoginView',['model/user/UserModel',
     UserLoginView.prototype.derender = function() {
         var self = this, $el;
 
-        self.logger.debug("UserLoginView.prototype.derender");
+        self.logger.debug('UserLoginView Derender Request');
         
         try {
             $('.loginWrapper').dialog('close');
@@ -35926,7 +35966,7 @@ define('view/user/UserLoginView',['model/user/UserModel',
             
             self.rendered = false;
         } catch (e) {
-            self.logger.error('UserLoginView.prototype.derender', e);
+            self.logger.error('UserLoginView Derender Request', e);
         }        
     };
 
@@ -36020,7 +36060,7 @@ define('view/user/UserLogoutView',['model/user/UserModel',
     UserLogoutView.prototype.render = function() {
         var self = this, $el, templateData;
 
-        self.logger.debug("UserLogoutView.prototype.render");
+        self.logger.debug('UserLogoutView Render Request');
 
         try {
             $el = $(self.element);
@@ -36045,7 +36085,7 @@ define('view/user/UserLogoutView',['model/user/UserModel',
             
             self.rendered = true;            
         } catch (e) {
-            self.logger.error('UserLogoutView.prototype.render', e);
+            self.logger.error('UserLogoutView Render Request', e);
         }
 
     };
@@ -36053,7 +36093,7 @@ define('view/user/UserLogoutView',['model/user/UserModel',
     UserLogoutView.prototype.derender = function() {
         var self = this, $el;
 
-        self.logger.debug("UserLogoutView.prototype.derender");
+        self.logger.debug('UserLogoutView Derender Request');
         
         try {
             $('.loginWrapper').dialog('close');
@@ -36066,7 +36106,7 @@ define('view/user/UserLogoutView',['model/user/UserModel',
             
             self.rendered = false;
         } catch (e) {
-            self.logger.error('UserLogoutView.prototype.derender', e);
+            self.logger.error('UserLogoutView Derender Request', e);
         }        
     };
 
@@ -38737,7 +38777,7 @@ define('view/IndexView',['model/IndexModel',
     IndexView.prototype.render = function() {
         var self = this, indexModel, $el, templateData;
 
-        self.logger.debug("IndexView.prototype.render");
+        self.logger.debug('IndexView Render Request');
 
         try {
             $el = $(self.element);
@@ -38753,7 +38793,7 @@ define('view/IndexView',['model/IndexModel',
             
             self.rendered = true;            
         } catch (e) {
-            self.logger.error('IndexView.prototype.render', e);
+            self.logger.error('IndexView Render Request', e);
         }
 
     };
@@ -38761,7 +38801,7 @@ define('view/IndexView',['model/IndexModel',
     IndexView.prototype.derender = function() {
         var self = this, $el;
 
-        self.logger.debug("IndexView.prototype.derender");
+        self.logger.debug('IndexView Derender Request');
         
         try {
             $el = $(self.element);
@@ -38770,7 +38810,7 @@ define('view/IndexView',['model/IndexModel',
             
             self.rendered = false;
         } catch (e) {
-            self.logger.error('IndexView.prototype.derender', e);
+            self.logger.error('IndexView Derender Request', e);
         }        
     };
 
@@ -38859,7 +38899,7 @@ define('view/DashboardView',[
     DashboardView.prototype.render = function() {
         var self = this, $el, templateData;
 
-        self.logger.debug("DashboardView.prototype.render");
+        self.logger.debug('DashboardView Render Request');
 
         try {
             $el = $(self.element);
@@ -38873,7 +38913,7 @@ define('view/DashboardView',[
             
             self.rendered = true;            
         } catch (e) {
-            self.logger.error('DashboardView.prototype.render', e);
+            self.logger.error('DashboardView Render Request', e);
         }
 
     };
@@ -38881,7 +38921,7 @@ define('view/DashboardView',[
     DashboardView.prototype.derender = function() {
         var self = this, $el;
 
-        self.logger.debug("DashboardView.prototype.derender");
+        self.logger.debug('DashboardView Derender Request');
         
         try {
             $el = $(self.element);
@@ -38890,7 +38930,7 @@ define('view/DashboardView',[
             
             self.rendered = false;
         } catch (e) {
-            self.logger.error('DashboardView.prototype.derender', e);
+            self.logger.error('DashboardView Derender Request', e);
         }        
     };
 
@@ -38977,7 +39017,7 @@ define('controller/user/DashboardController',['jquery',
 /**
  * @author Robert “The Man” Suppenbach
  */
-define('core/pfmain',[ 'jquery',
+define('core/PersonalFinanceMain',[ 'jquery',
          'knockoutjs',	
          'LoggerConfig',
          'Mediator',
@@ -38998,21 +39038,25 @@ define('core/pfmain',[ 'jquery',
                  RouteController
                  ) {
 	
-    var App = {
+    var PersonalFinanceApp = {
             "logger": undefined,
             "sessionTimer": undefined,
             "sessionActivity": function(){
-                clearTimeout(App.sessionTimer);
-                App.sessionTimer = setTimeout(function(){
-                    App.clearSession();
-                }, (1000 * 60 * 5));  
+                PersonalFinanceApp.logger.debug('User activity detected');
+                clearTimeout(PersonalFinanceApp.sessionTimer);
+                PersonalFinanceApp.sessionTimer = setTimeout(function(){
+                    PersonalFinanceApp.clearSession();
+                }, sessionTimeOutTime);  
             },
             "clearSession": function(){
-                clearTimeout(App.sessionTimer);
+                clearTimeout(PersonalFinanceApp.sessionTimer);
                 sessionStorage.removeItem('user');
             },
             "applicationContext": ko.observable({
                 "errors": ko.observableArray([]),
+                "build": ko.observable(build),
+                "version": ko.observable(version),
+                "environment": ko.observable(environment),
             	"servertime": ko.observable(),
             	"user": ko.observable(undefined),
             	"uiTheme": ko.observable("start"),
@@ -39026,27 +39070,27 @@ define('core/pfmain',[ 'jquery',
             }),
             "load" : function(){
                 // Load Configuration form LocalStorage
-                var template, vm, box, d, ts,
-                themeStore = localStorage.PersonalFinanceManager_theme, indexView, 
+                var d, ts,
+                themeStore = localStorage.PersonalFinanceManager_theme,
                 dashboardController, userController;
 
                 if(themeStore){
-                    App.applicationContext().uiTheme(themeStore);
+                    PersonalFinanceApp.applicationContext().uiTheme(themeStore);
                 }     
 
                 dashboardController = new DashboardController({
-                	applicationContext: App.applicationContext
+                	applicationContext: PersonalFinanceApp.applicationContext
                 });
                 
                 userController = new UserController({
-                	applicationContext: App.applicationContext
+                	applicationContext: PersonalFinanceApp.applicationContext
                 });
                 
-                App.applicationContext().errors.subscribe(function(changes){
+                PersonalFinanceApp.applicationContext().errors.subscribe(function(changes){
                     changes.forEach(function(change) {
                         if (change.status === 'added') {
                             setTimeout(function(){
-                                App.applicationContext().errors.shift();                             
+                                PersonalFinanceApp.applicationContext().errors.shift();                             
                             }, 3000);
                         }
                     });
@@ -39056,8 +39100,7 @@ define('core/pfmain',[ 'jquery',
                                 
             	RouteController.router.run('#welcome');
                 
-            	$(window).on('scroll', App.sessionActivity);
-            	$('body').on('click', App.sessionActivity);
+            	$('body').on('click tap keypress', PersonalFinanceApp.sessionActivity);
             	
                 setInterval(function() {
                     d = new Date();
@@ -39070,38 +39113,35 @@ define('core/pfmain',[ 'jquery',
         };
     
         (function () {        	
-            App.logger = new LoggerConfig().getLogger('pfmain.js');
-            App.logger.info("Initializing Application Layer");
+            PersonalFinanceApp.logger = new LoggerConfig().getLogger('pfmain.js');
+            PersonalFinanceApp.logger.info("Initializing PersonalFinanceApplication Layer");
             
-            App.applicationContext().uiTheme.subscribe(function(value){
+            PersonalFinanceApp.applicationContext().uiTheme.subscribe(function(value){
                 localStorage.PersonalFinanceManager_theme = value;
             });
                         
             TemplateManager.getTemplateList({
                 name: 'Personal Finance Manager',
                 projectPath: 'personalfinance',
-                context: App,
+                context: PersonalFinanceApp,
                 callback: function(){
                     setTimeout(function() {
                         // Apply bindings
-                        ko.applyBindings(App.applicationContext, document.getElementById("htmlTop"));
+                        ko.applyBindings(PersonalFinanceApp.applicationContext, document.getElementById("htmlTop"));
 
-                        App.load();
+                        PersonalFinanceApp.load();
                     }, 15);
                 }
             });
-            
-            
-            
         }());   
         
         $.extend(window, {
-            PFApp: App,
+            App: PersonalFinanceApp,
             TemplateManager: TemplateManager,
             Mediator: Mediator
         });
         
-        return App;
+        return PersonalFinanceApp;
 });
 /* jslint browser: true, devel: true, unparam: true, eval: true */
 // For any third party dependencies, like jQuery, place them in the lib folder.
@@ -39111,10 +39151,11 @@ define('core/pfmain',[ 'jquery',
  */
 require([
      'jquery', 
-     'core/globals', 
+     'core/config', 
+     'utilities/core/JavascriptExtensions',
      'utilities/knockout/BindingHandlers', 
      'utilities/knockout/KnockoutExtensions', 
-     'core/pfmain'
+     'core/PersonalFinanceMain'
 ]);
 define("pfapp.js", function(){});
 

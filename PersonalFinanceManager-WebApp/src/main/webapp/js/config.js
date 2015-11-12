@@ -2,12 +2,14 @@
 
 /**
  * @author Robert “The Man” Suppenbach
+ * @note 
+ *      DERIVED FILE
+ *      ONLY MODIFY THE VERSION OF THIS FILE IN THE /src/main/resources folder.
  */
 define(['jquery', 'LoggerConfig'], function($, LoggerConfig){
     var logger = new LoggerConfig().getLogger('globals.js'),
-    Globals = {
-        uiThemes: [
-                   {label:"Black Tie", value:"black-tie"},
+    config = {
+        uiThemes: [{label:"Black Tie", value:"black-tie"},
                    {label:"Blitzer", value:"blitzer"},
                    {label:"Cupertino", value:"cupertino"},
                    {label:"Dark Hive", value:"dark-hive"},
@@ -22,29 +24,27 @@ define(['jquery', 'LoggerConfig'], function($, LoggerConfig){
                    {label:"Smoothness", value:"smoothness"},
                    {label:"Start", value:"start"},
                    {label:"Trontastic", value:"trontastic"},
-                   {label:"Vader", value:"vader"}],    	
+                   {label:"Vader", value:"vader"}],
+       sessionTimeOutTime: (1000 * 60 * 5),
+       build: "20151112",
+       version: "1.0.1",
+       environment: "local"
     };
     
-    $.extend(window, Globals);
+    // overrides for local env incremental builds
+    if(config.build.indexOf("buildId") > 0){
+        var today = new Date();
+        config.build = today.getFullYear() + "" + today.getDate() + "" + today.getDay();
+    }
+    if(config.version.indexOf("versionId") > 0){
+        config.version = "Local";
+    }
+    if(config.environment.indexOf("enviromentId") > 0){
+        config.environment = "DEV";
+    }
     
-    Array.prototype.contains = function(elem) {
-        var i;
-
-        if ( $.isArray(this) ) {
-            if ( $.inArray(elem, this) > -1 ) {
-                return true;
-            }
-        }
-        for ( i in this ) {
-            if ( $.isArray(this[i]) ) {
-                if ( $.inArray(elem, this[i]) > -1 ) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    };
-    
-    return Globals;
+    // make the configuration globally available.
+    $.extend(window, config);
+        
+    return config;
 });

@@ -77,7 +77,7 @@ define(['model/IndexModel',
     IndexView.prototype.render = function() {
         var self = this, indexModel, $el, templateData;
 
-        self.logger.debug("IndexView.prototype.render");
+        self.logger.debug('IndexView Render Request');
 
         try {
             $el = $(self.element);
@@ -93,7 +93,7 @@ define(['model/IndexModel',
             
             self.rendered = true;            
         } catch (e) {
-            self.logger.error('IndexView.prototype.render', e);
+            self.logger.error('IndexView Render Request', e);
         }
 
     };
@@ -101,7 +101,7 @@ define(['model/IndexModel',
     IndexView.prototype.derender = function() {
         var self = this, $el;
 
-        self.logger.debug("IndexView.prototype.derender");
+        self.logger.debug('IndexView Derender Request');
         
         try {
             $el = $(self.element);
@@ -110,7 +110,7 @@ define(['model/IndexModel',
             
             self.rendered = false;
         } catch (e) {
-            self.logger.error('IndexView.prototype.derender', e);
+            self.logger.error('IndexView Derender Request', e);
         }        
     };
 

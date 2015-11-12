@@ -24,21 +24,25 @@ define([ 'jquery',
                  RouteController
                  ) {
 	
-    var App = {
+    var PersonalFinanceApp = {
             "logger": undefined,
             "sessionTimer": undefined,
             "sessionActivity": function(){
-                clearTimeout(App.sessionTimer);
-                App.sessionTimer = setTimeout(function(){
-                    App.clearSession();
-                }, (1000 * 60 * 5));  
+                PersonalFinanceApp.logger.debug('User activity detected');
+                clearTimeout(PersonalFinanceApp.sessionTimer);
+                PersonalFinanceApp.sessionTimer = setTimeout(function(){
+                    PersonalFinanceApp.clearSession();
+                }, sessionTimeOutTime);  
             },
             "clearSession": function(){
-                clearTimeout(App.sessionTimer);
+                clearTimeout(PersonalFinanceApp.sessionTimer);
                 sessionStorage.removeItem('user');
             },
             "applicationContext": ko.observable({
                 "errors": ko.observableArray([]),
+                "build": ko.observable(build),
+                "version": ko.observable(version),
+                "environment": ko.observable(environment),
             	"servertime": ko.observable(),
             	"user": ko.observable(undefined),
             	"uiTheme": ko.observable("start"),
@@ -52,27 +56,27 @@ define([ 'jquery',
             }),
             "load" : function(){
                 // Load Configuration form LocalStorage
-                var template, vm, box, d, ts,
-                themeStore = localStorage.PersonalFinanceManager_theme, indexView, 
+                var d, ts,
+                themeStore = localStorage.PersonalFinanceManager_theme,
                 dashboardController, userController;
 
                 if(themeStore){
-                    App.applicationContext().uiTheme(themeStore);
+                    PersonalFinanceApp.applicationContext().uiTheme(themeStore);
                 }     
 
                 dashboardController = new DashboardController({
-                	applicationContext: App.applicationContext
+                	applicationContext: PersonalFinanceApp.applicationContext
                 });
                 
                 userController = new UserController({
-                	applicationContext: App.applicationContext
+                	applicationContext: PersonalFinanceApp.applicationContext
                 });
                 
-                App.applicationContext().errors.subscribe(function(changes){
+                PersonalFinanceApp.applicationContext().errors.subscribe(function(changes){
                     changes.forEach(function(change) {
                         if (change.status === 'added') {
                             setTimeout(function(){
-                                App.applicationContext().errors.shift();                             
+                                PersonalFinanceApp.applicationContext().errors.shift();                             
                             }, 3000);
                         }
                     });
@@ -82,8 +86,7 @@ define([ 'jquery',
                                 
             	RouteController.router.run('#welcome');
                 
-            	$(window).on('scroll', App.sessionActivity);
-            	$('body').on('click', App.sessionActivity);
+            	$('body').on('click tap keypress', PersonalFinanceApp.sessionActivity);
             	
                 setInterval(function() {
                     d = new Date();
@@ -96,36 +99,33 @@ define([ 'jquery',
         };
     
         (function () {        	
-            App.logger = new LoggerConfig().getLogger('pfmain.js');
-            App.logger.info("Initializing Application Layer");
+            PersonalFinanceApp.logger = new LoggerConfig().getLogger('pfmain.js');
+            PersonalFinanceApp.logger.info("Initializing PersonalFinanceApplication Layer");
             
-            App.applicationContext().uiTheme.subscribe(function(value){
+            PersonalFinanceApp.applicationContext().uiTheme.subscribe(function(value){
                 localStorage.PersonalFinanceManager_theme = value;
             });
                         
             TemplateManager.getTemplateList({
                 name: 'Personal Finance Manager',
                 projectPath: 'personalfinance',
-                context: App,
+                context: PersonalFinanceApp,
                 callback: function(){
                     setTimeout(function() {
                         // Apply bindings
-                        ko.applyBindings(App.applicationContext, document.getElementById("htmlTop"));
+                        ko.applyBindings(PersonalFinanceApp.applicationContext, document.getElementById("htmlTop"));
 
-                        App.load();
+                        PersonalFinanceApp.load();
                     }, 15);
                 }
             });
-            
-            
-            
         }());   
         
         $.extend(window, {
-            PFApp: App,
+            App: PersonalFinanceApp,
             TemplateManager: TemplateManager,
             Mediator: Mediator
         });
         
-        return App;
+        return PersonalFinanceApp;
 });

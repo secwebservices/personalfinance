@@ -6,8 +6,9 @@
  */
 require([
      'jquery', 
-     'core/globals', 
+     'core/config', 
+     'utilities/core/JavascriptExtensions',
      'utilities/knockout/BindingHandlers', 
      'utilities/knockout/KnockoutExtensions', 
-     'core/pfmain'
+     'core/PersonalFinanceMain'
 ]);

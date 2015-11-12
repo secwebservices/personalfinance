@@ -84,7 +84,7 @@ define(['model/user/UserModel',
     UserLoginView.prototype.render = function() {
         var self = this, $el, templateData;
 
-        self.logger.debug("UserLoginView.prototype.render");
+        self.logger.debug('UserLoginView Render Request');
 
         try {
             $el = $(self.element);
@@ -114,7 +114,7 @@ define(['model/user/UserModel',
 
             self.rendered = true;
         } catch (e) {
-            self.logger.error('UserLoginView.prototype.render', e);
+            self.logger.error('UserLoginView Render Request', e);
         }
 
     };
@@ -122,7 +122,7 @@ define(['model/user/UserModel',
     UserLoginView.prototype.derender = function() {
         var self = this, $el;
 
-        self.logger.debug("UserLoginView.prototype.derender");
+        self.logger.debug('UserLoginView Derender Request');
         
         try {
             $('.loginWrapper').dialog('close');
@@ -135,7 +135,7 @@ define(['model/user/UserModel',
             
             self.rendered = false;
         } catch (e) {
-            self.logger.error('UserLoginView.prototype.derender', e);
+            self.logger.error('UserLoginView Derender Request', e);
         }        
     };
 
