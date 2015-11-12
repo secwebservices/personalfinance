@@ -26,7 +26,19 @@ define([ 'jquery',
 	
     var App = {
             "logger": undefined,
+            "sessionTimer": undefined,
+            "sessionActivity": function(){
+                clearTimeout(App.sessionTimer);
+                App.sessionTimer = setTimeout(function(){
+                    App.clearSession();
+                }, (1000 * 60 * 5));  
+            },
+            "clearSession": function(){
+                clearTimeout(App.sessionTimer);
+                sessionStorage.removeItem('user');
+            },
             "applicationContext": ko.observable({
+                "errors": ko.observableArray([]),
             	"servertime": ko.observable(),
             	"user": ko.observable(undefined),
             	"uiTheme": ko.observable("start"),
@@ -40,9 +52,9 @@ define([ 'jquery',
             }),
             "load" : function(){
                 // Load Configuration form LocalStorage
-                var store = localStorage.PersonalFinanceManager_store, template, vm, box,
+                var template, vm, box, d, ts,
                 themeStore = localStorage.PersonalFinanceManager_theme, indexView, 
-                dashboardController, userController, d, ts;
+                dashboardController, userController;
 
                 if(themeStore){
                     App.applicationContext().uiTheme(themeStore);
@@ -55,9 +67,24 @@ define([ 'jquery',
                 userController = new UserController({
                 	applicationContext: App.applicationContext
                 });
+                
+                App.applicationContext().errors.subscribe(function(changes){
+                    changes.forEach(function(change) {
+                        if (change.status === 'added') {
+                            setTimeout(function(){
+                                App.applicationContext().errors.shift();                             
+                            }, 3000);
+                        }
+                    });
+
+                }, null, "arrayChange");
+
                                 
             	RouteController.router.run('#welcome');
                 
+            	$(window).on('scroll', App.sessionActivity);
+            	$('body').on('click', App.sessionActivity);
+            	
                 setInterval(function() {
                     d = new Date();
                     ts = d.getTime();
@@ -88,7 +115,10 @@ define([ 'jquery',
                         App.load();
                     }, 15);
                 }
-            });  
+            });
+            
+            
+            
         }());   
         
         $.extend(window, {

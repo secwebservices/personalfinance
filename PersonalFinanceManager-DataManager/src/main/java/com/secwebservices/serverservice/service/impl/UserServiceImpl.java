@@ -1,5 +1,10 @@
 package com.secwebservices.serverservice.service.impl;
 
+import com.secwebservices.beans.user.User;
+import com.secwebservices.dao.user.UserDAO;
+import com.secwebservices.entities.user.UserEntity;
+import com.secwebservices.serverservice.service.UserService;
+
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -9,11 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.secwebservices.beans.user.User;
-import com.secwebservices.dao.user.UserDAO;
-import com.secwebservices.entities.user.UserEntity;
-import com.secwebservices.serverservice.service.UserService;
 
 
 /**
@@ -32,13 +32,21 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
   
     @Override
-    public User getUser(String username) throws IllegalAccessException, InvocationTargetException, ParseException {  
-        User user = new User(userDAO.getUser(username));  
+    public User getUser(String username) throws IllegalAccessException, InvocationTargetException, ParseException {   
+        User user = null; 
+        UserEntity entity = userDAO.getUser(username);
+        if(entity != null){
+        	user = new User(entity);  
+        }
         return user;
     }  
     
     public User getUserByEmail(String email) throws IllegalAccessException, InvocationTargetException, ParseException {  
-        User user = new User(userDAO.getUserByEmail(email));  
+        User user = null; 
+        UserEntity entity = userDAO.getUserByEmail(email);
+        if(entity != null){
+        	user = new User(entity);  
+        }
         return user;
     }  
     

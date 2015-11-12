@@ -2,9 +2,16 @@ body {
     margin: 0;
     padding: 5px 10px; 
     font: 10px Arial, Tahoma, Verdana, sans-serif;
-    min-height: 650px;    
+    min-height: 650px;       
 }
 
+.ui-widget {
+    font-size: .95em;
+
+	.ui-widget {
+	    font-size: .95em;
+	} 
+} 
 
 h1 {
     font-size: 24px;
@@ -115,6 +122,29 @@ h6 {
     }
 }
 
+.errors-container {
+	position: fixed;
+	top: 10px;
+	width: ~"calc(100% - 30px)";
+	margin: 0 auto;
+	z-index: 1000;
+	line-height: 25px;
+}
+
+.error {
+    clear: both;
+    float: left;
+    width: 100%;
+    margin: 2px;
+    padding: 2px;
+}
+
+.session_expired {
+	
+}
+
+
+
 .ui-tabs-anchor:focus {
     outline: none;
 }
@@ -155,6 +185,66 @@ select{
 
 button:focus {
     outline: none;
+}
+
+.edit-form {
+	.ui-button {
+        min-width: 75px;    
+    }
+	
+	label {
+	   float: left;
+	   width: 120px;
+	   margin-bottom: 5px;
+	   margin-top: 5px;
+	}
+	
+	input {
+	   float: left;
+	   width: ~"clac(100% - 140px)";
+	   margin-left: 10px;
+       margin-bottom: 5px;
+       margin-top: 5px;
+	}
+
+    select {
+       float: left;
+       width: ~"clac(100% - 140px)";
+       margin-left: 10px;
+       margin-bottom: 5px;
+       margin-top: 5px;
+    }
+    
+    textarea {
+       clear: left;
+       float: left;
+       width: ~"clac(100% - 15px)";
+       margin-left: 10px;
+       margin-bottom: 5px;
+       margin-top: 5px;       
+    }    
+	
+}
+
+.loginWrapper {
+	
+	.login-form{
+	
+	}
+	
+	.buttonLine {
+	    width: 100%;
+	    text-align: center;
+	    margin-top: 5px;
+	    clear: both;
+	    float: left;
+	   
+       input {
+            float: none;
+            margin-left: 5px;
+            margin-right: 5px;
+       }
+	}
 }
 
 @import "progress.less";

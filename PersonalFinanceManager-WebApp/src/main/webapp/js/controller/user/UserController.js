@@ -14,17 +14,17 @@ define(['jquery',
         'TemplateManager'], function($, ko, LoggerConfig, Nediator, UserLoginView, UserLogoutView, RouteController, TemplateManager){
 	
     function UserController(config){
-    	var self = this, userLoginView, userLogoutView;
+    	var self = this;
     	
     	self.logger = new LoggerConfig().getLogger('UserController.js');
     	
-    	userLoginView = new UserLoginView({
+    	self.userLoginView = new UserLoginView({
             /** the element to render the view on. */
             element : '.userdialog',
             user: config.user
         });
 
-        userLogoutView = new UserLogoutView({
+        self.userLogoutView = new UserLogoutView({
             /** the element to render the view on. */
             element : '.userdialog',
             user: config.user
@@ -41,6 +41,10 @@ define(['jquery',
          */        
         Mediator.subscribe({channel: 'PF-Logout-Request', context: self, callback: self.logoutRequest});
     }
+    
+    UserController.prototype.userLoginView = undefined; 
+    
+    UserController.prototype.userLogoutView = undefined;
     
     UserController.prototype.logger = undefined;
     
@@ -86,6 +90,9 @@ define(['jquery',
 			    	Mediator.publish({channel: 'PF-Login-Success'});
 			    	Mediator.publish({channel: 'PF-Derender', view: 'UserLoginView'});
 				}
+		    },
+		    error: function(jqXHR, status, error){
+		        self.applicationContext().errors.push(JSON.parse(jqXHR.responseText).message);
 		    },
 		    dataType: 'json'
 		});
@@ -224,7 +231,7 @@ define(['jquery',
         self.logger.debug('UserController.prototype.sessionTimeout', self.user);
 
         if($('.sessionTimeoutDialog').length === 0){
-            $('body').append(self.sessionTemplate);        	
+            $('body').append(self.sessionTimeoutTemplate);        	
         }
 
         self.sessionTimeoutDialog = $('.sessionTimeoutDialog').dialog(
@@ -281,7 +288,7 @@ define(['jquery',
         self.logger.debug('UserController.prototype.sessionExpired', self.user);
 
         if($('.sessionExpiredDialog').length === 0){
-            $('body').append(self.sessionTemplate);        	
+            $('body').append(self.sessionExpiredTemplate);        	
         }
 
         self.sessionExpiredDialog = $('.sessionExpiredDialog').dialog(

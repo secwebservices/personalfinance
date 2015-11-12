@@ -27,8 +27,8 @@ define(['LoggerConfig',
     
     UserModel.prototype.enabled = ko.observable(undefined);
     
-    UserModel.prototype.loginRequest = undefined;
-            
+    UserModel.prototype.error = ko.observable(undefined);
+    
     UserModel.prototype.initialize = function (config) {
         var self = this, c, options = $.extend({}, config);
         

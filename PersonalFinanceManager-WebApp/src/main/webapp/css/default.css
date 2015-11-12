@@ -4,6 +4,12 @@ body {
   font: 10px Arial, Tahoma, Verdana, sans-serif;
   min-height: 650px;
 }
+.ui-widget {
+  font-size: .95em;
+}
+.ui-widget .ui-widget {
+  font-size: .95em;
+}
 h1 {
   font-size: 24px;
   font-weight: bold;
@@ -96,6 +102,21 @@ h6 {
   text-align: right;
   padding-right: 10px;
 }
+.errors-container {
+  position: fixed;
+  top: 10px;
+  width: calc(100% - 30px);
+  margin: 0 auto;
+  z-index: 1000;
+  line-height: 25px;
+}
+.error {
+  clear: both;
+  float: left;
+  width: 100%;
+  margin: 2px;
+  padding: 2px;
+}
 .ui-tabs-anchor:focus {
   outline: none;
 }
@@ -128,6 +149,49 @@ select:focus {
 }
 button:focus {
   outline: none;
+}
+.edit-form .ui-button {
+  min-width: 75px;
+}
+.edit-form label {
+  float: left;
+  width: 120px;
+  margin-bottom: 5px;
+  margin-top: 5px;
+}
+.edit-form input {
+  float: left;
+  width: clac(100% - 140px);
+  margin-left: 10px;
+  margin-bottom: 5px;
+  margin-top: 5px;
+}
+.edit-form select {
+  float: left;
+  width: clac(100% - 140px);
+  margin-left: 10px;
+  margin-bottom: 5px;
+  margin-top: 5px;
+}
+.edit-form textarea {
+  clear: left;
+  float: left;
+  width: clac(100% - 15px);
+  margin-left: 10px;
+  margin-bottom: 5px;
+  margin-top: 5px;
+}
+.loginWrapper .buttonLine {
+  width: 100%;
+  text-align: center;
+  margin-top: 5px;
+  clear: both;
+  float: left;
+}
+.loginWrapper .buttonLine input {
+  float: none;
+  margin-left: 5px;
+  margin-right: 5px;
 }
 #circularG {
   position: relative;

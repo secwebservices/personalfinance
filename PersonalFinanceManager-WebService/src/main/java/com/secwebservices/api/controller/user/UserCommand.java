@@ -1,5 +1,15 @@
 package com.secwebservices.api.controller.user;
 
+import com.secwebservices.api.BaseController;
+import com.secwebservices.api.exception.AuthorizationException;
+import com.secwebservices.api.exception.RequestFailureException;
+import com.secwebservices.api.exception.ValidationException;
+import com.secwebservices.beans.account.Account;
+import com.secwebservices.beans.client.Client;
+import com.secwebservices.beans.user.LoginRequest;
+import com.secwebservices.beans.user.User;
+import com.secwebservices.serverservice.ServiceManager;
+
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.util.List;
@@ -13,16 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.secwebservices.api.BaseController;
-import com.secwebservices.api.exception.AuthorizationException;
-import com.secwebservices.api.exception.RequestFailureException;
-import com.secwebservices.api.exception.ValidationException;
-import com.secwebservices.beans.account.Account;
-import com.secwebservices.beans.client.Client;
-import com.secwebservices.beans.user.LoginRequest;
-import com.secwebservices.beans.user.User;
-import com.secwebservices.serverservice.ServiceManager;
 
 /**
  * 
@@ -60,30 +60,30 @@ public class UserCommand extends BaseController {
 			user = serviceManager.getUserService().getUser(loginRequest.getUsername());
 			if (user != null) {				
 				if(!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())){
-					throw new AuthorizationException("Username or password invalid");
+					throw new AuthorizationException("Username or password invalid.");
 				}
 				
 				if(!user.getAccountNonLocked()){
-				    throw new AuthorizationException("Account locked");
+				    throw new AuthorizationException("Account locked!");
 				}
 				
 				if(!user.getEnabled()){
-				    throw new AuthorizationException("Account disabled");
+				    throw new AuthorizationException("Account disabled!");
 				}
 				
 				if(!user.getCredentialsNonExpired()){
-				    throw new AuthorizationException("Username or password invalid");
+				    throw new AuthorizationException("Username or Password invalid.");
 				}
 				
 				if(!user.getAccountNonExpired()){
-				    throw new AuthorizationException("Account expired");
+				    throw new AuthorizationException("Account expired.");
 				}
 
 				if(user.getAccountId() != null){
 				    Account account = (Account) request.getSession().getAttribute("account");
 
 	                if(account != null && !account.getId().equals(user.getAccountId())){
-	                    throw new AuthorizationException("Username or password invalid for this site"); 
+	                    throw new AuthorizationException("Username or Password invalid for this site"); 
 	                }
 				}else if(user.getClientId() != null){
                     Client client = (Client) request.getSession().getAttribute("client");
@@ -92,7 +92,7 @@ public class UserCommand extends BaseController {
                     if(client == null){
                         List<Client> clients = serviceManager.getClientService().getClientsForAccount(account.getId());
                         if(clients == null){
-                            throw new AuthorizationException("Username or password invalid for this site"); 
+                            throw new AuthorizationException("Username or Password invalid for this site"); 
                         }
                         
                         for(Client clientItem: clients){
@@ -103,18 +103,18 @@ public class UserCommand extends BaseController {
                     }
                     
                     if(client == null || !client.getId().equals(user.getClientId())){
-                        throw new AuthorizationException("Username or password invalid for this site"); 
+                        throw new AuthorizationException("Username or Password invalid for this site"); 
                     }				    
 				}else if(user.getAccountId() == null && user.getClientId() == null){
 				    if(!user.getAdmin()){
-				        throw new AuthorizationException("Username or password invalid");
+				        throw new AuthorizationException("Username or Password invalid.");
 				    }
 				}
 
 				user.setPassword("");
                 request.getSession().setAttribute("user", user);
 			} else {
-				throw new AuthorizationException("Database Error - Please Contact Support.");
+				throw new AuthorizationException("Username or password invalid.");
 			}
 
 		} catch (InvocationTargetException e) {

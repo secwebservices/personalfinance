@@ -34944,6 +34944,25 @@ define('utilities/knockout/BindingHandlers',['knockoutjs', 'LoggerConfig', 'jque
         }
     };
 
+    ko.bindingHandlers.fadeVisible = {
+        init: function(element, valueAccessor) {
+            // Initially set the element to be instantly visible/hidden depending on the value
+            var value = valueAccessor();
+            $(element).toggle(ko.unwrap(value)); // Use "unwrapObservable" so we can handle values that may or may not be observable
+        },
+        update: function(element, valueAccessor) {
+            // Whenever the value subsequently changes, slowly fade the element in or out
+            var value = valueAccessor();
+            setTimeout(function(){
+                if(ko.unwrap(value)){
+                    $(element).fadeIn(750);
+                }else{
+                    $(element).fadeOut(250);
+                }
+            },1);
+        }
+    }; 
+        
     /**
      * dialog jQuery UI dialog binding
      */
@@ -35751,8 +35770,8 @@ define('model/user/UserModel',['LoggerConfig',
     
     UserModel.prototype.enabled = ko.observable(undefined);
     
-    UserModel.prototype.loginRequest = undefined;
-            
+    UserModel.prototype.error = ko.observable(undefined);
+    
     UserModel.prototype.initialize = function (config) {
         var self = this, c, options = $.extend({}, config);
         
@@ -35810,6 +35829,8 @@ define('view/user/UserLoginView',['model/user/UserModel',
     
     UserLoginView.prototype.rendered = false;
     
+    UserLoginView.prototype.model = undefined;
+    
     UserLoginView.prototype.initialize = function (config) {
         var self = this, c, options = $.extend({}, config);
         
@@ -35852,7 +35873,7 @@ define('view/user/UserLoginView',['model/user/UserModel',
      * @returns {object}
      */
     UserLoginView.prototype.render = function() {
-        var self = this, userModel, $el, templateData;
+        var self = this, $el, templateData;
 
         self.logger.debug("UserLoginView.prototype.render");
 
@@ -35863,9 +35884,9 @@ define('view/user/UserLoginView',['model/user/UserModel',
             
             $el.html(templateData).show();
             
-            userModel = new UserModel();
+            self.model = new UserModel();
             
-            $.extend(userModel, {
+            $.extend(self.model, {
             	doLogin: function(){
             		var loginRequest = {
 						username: this.username(),
@@ -35880,7 +35901,7 @@ define('view/user/UserLoginView',['model/user/UserModel',
             });
 
             ko.cleanNode($el[0]);
-            ko.applyBindings(userModel, $el[0]);
+            ko.applyBindings(self.model, $el[0]);
 
             self.rendered = true;
         } catch (e) {
@@ -35953,6 +35974,8 @@ define('view/user/UserLogoutView',['model/user/UserModel',
     
     UserLogoutView.prototype.rendered = false;
     
+    UserLogoutView.prototype.model = undefined;
+    
     UserLogoutView.prototype.initialize = function (config) {
         var self = this, c, options = $.extend({}, config);
         
@@ -35995,7 +36018,7 @@ define('view/user/UserLogoutView',['model/user/UserModel',
      * @returns {object}
      */
     UserLogoutView.prototype.render = function() {
-        var self = this, userModel = {}, $el, templateData;
+        var self = this, $el, templateData;
 
         self.logger.debug("UserLogoutView.prototype.render");
 
@@ -36006,7 +36029,9 @@ define('view/user/UserLogoutView',['model/user/UserModel',
 
             $el.html(templateData).show();
             
-            $.extend(userModel, {
+            self.model = new UserModel(ko.toJS(self.user));
+            
+            $.extend(self.model, {
             	doLogout: function(){
             		Mediator.publish({channel: 'PF-Logout-Request'});
             	},
@@ -36016,7 +36041,7 @@ define('view/user/UserLogoutView',['model/user/UserModel',
             });
 
             ko.cleanNode($el[0]);
-            ko.applyBindings(userModel, $el[0]);
+            ko.applyBindings(self.model, $el[0]);
             
             self.rendered = true;            
         } catch (e) {
@@ -38257,17 +38282,17 @@ define('controller/user/UserController',['jquery',
         'TemplateManager'], function($, ko, LoggerConfig, Nediator, UserLoginView, UserLogoutView, RouteController, TemplateManager){
 	
     function UserController(config){
-    	var self = this, userLoginView, userLogoutView;
+    	var self = this;
     	
     	self.logger = new LoggerConfig().getLogger('UserController.js');
     	
-    	userLoginView = new UserLoginView({
+    	self.userLoginView = new UserLoginView({
             /** the element to render the view on. */
             element : '.userdialog',
             user: config.user
         });
 
-        userLogoutView = new UserLogoutView({
+        self.userLogoutView = new UserLogoutView({
             /** the element to render the view on. */
             element : '.userdialog',
             user: config.user
@@ -38284,6 +38309,10 @@ define('controller/user/UserController',['jquery',
          */        
         Mediator.subscribe({channel: 'PF-Logout-Request', context: self, callback: self.logoutRequest});
     }
+    
+    UserController.prototype.userLoginView = undefined; 
+    
+    UserController.prototype.userLogoutView = undefined;
     
     UserController.prototype.logger = undefined;
     
@@ -38329,6 +38358,9 @@ define('controller/user/UserController',['jquery',
 			    	Mediator.publish({channel: 'PF-Login-Success'});
 			    	Mediator.publish({channel: 'PF-Derender', view: 'UserLoginView'});
 				}
+		    },
+		    error: function(jqXHR, status, error){
+		        self.applicationContext().errors.push(JSON.parse(jqXHR.responseText).message);
 		    },
 		    dataType: 'json'
 		});
@@ -38467,7 +38499,7 @@ define('controller/user/UserController',['jquery',
         self.logger.debug('UserController.prototype.sessionTimeout', self.user);
 
         if($('.sessionTimeoutDialog').length === 0){
-            $('body').append(self.sessionTemplate);        	
+            $('body').append(self.sessionTimeoutTemplate);        	
         }
 
         self.sessionTimeoutDialog = $('.sessionTimeoutDialog').dialog(
@@ -38524,7 +38556,7 @@ define('controller/user/UserController',['jquery',
         self.logger.debug('UserController.prototype.sessionExpired', self.user);
 
         if($('.sessionExpiredDialog').length === 0){
-            $('body').append(self.sessionTemplate);        	
+            $('body').append(self.sessionExpiredTemplate);        	
         }
 
         self.sessionExpiredDialog = $('.sessionExpiredDialog').dialog(
@@ -38882,16 +38914,16 @@ define('controller/user/DashboardController',['jquery',
         'TemplateManager'], function($, ko, LoggerConfig, Mediator, IndexView, DashboardView, RouteController, TemplateManager){
 	
     function DashboardController(config){
-    	var self = this, indexView, dashboardView;
+    	var self = this;
     	
     	self.logger = new LoggerConfig().getLogger('DashboardController.js');
     	
-    	indexView = new IndexView({
+    	self.indexView = new IndexView({
             /** the element to render the view on. */
             element : '.viewpoint'
         });
 
-    	dashboardView = new DashboardView({
+    	self.dashboardView = new DashboardView({
             /** the element to render the view on. */
             element : '.viewpoint',
             applicationContext: self.applicationContext
@@ -38899,6 +38931,10 @@ define('controller/user/DashboardController',['jquery',
         
         self.initialize(config);
     }
+    
+    DashboardController.prototype.indexView = undefined; 
+    
+    DashboardController.prototype.dashboardView = undefined;
     
     DashboardController.prototype.logger = undefined;
     
@@ -38964,7 +39000,19 @@ define('core/pfmain',[ 'jquery',
 	
     var App = {
             "logger": undefined,
+            "sessionTimer": undefined,
+            "sessionActivity": function(){
+                clearTimeout(App.sessionTimer);
+                App.sessionTimer = setTimeout(function(){
+                    App.clearSession();
+                }, (1000 * 60 * 5));  
+            },
+            "clearSession": function(){
+                clearTimeout(App.sessionTimer);
+                sessionStorage.removeItem('user');
+            },
             "applicationContext": ko.observable({
+                "errors": ko.observableArray([]),
             	"servertime": ko.observable(),
             	"user": ko.observable(undefined),
             	"uiTheme": ko.observable("start"),
@@ -38978,9 +39026,9 @@ define('core/pfmain',[ 'jquery',
             }),
             "load" : function(){
                 // Load Configuration form LocalStorage
-                var store = localStorage.PersonalFinanceManager_store, template, vm, box,
+                var template, vm, box, d, ts,
                 themeStore = localStorage.PersonalFinanceManager_theme, indexView, 
-                dashboardController, userController, d, ts;
+                dashboardController, userController;
 
                 if(themeStore){
                     App.applicationContext().uiTheme(themeStore);
@@ -38993,9 +39041,24 @@ define('core/pfmain',[ 'jquery',
                 userController = new UserController({
                 	applicationContext: App.applicationContext
                 });
+                
+                App.applicationContext().errors.subscribe(function(changes){
+                    changes.forEach(function(change) {
+                        if (change.status === 'added') {
+                            setTimeout(function(){
+                                App.applicationContext().errors.shift();                             
+                            }, 3000);
+                        }
+                    });
+
+                }, null, "arrayChange");
+
                                 
             	RouteController.router.run('#welcome');
                 
+            	$(window).on('scroll', App.sessionActivity);
+            	$('body').on('click', App.sessionActivity);
+            	
                 setInterval(function() {
                     d = new Date();
                     ts = d.getTime();
@@ -39026,7 +39089,10 @@ define('core/pfmain',[ 'jquery',
                         App.load();
                     }, 15);
                 }
-            });  
+            });
+            
+            
+            
         }());   
         
         $.extend(window, {

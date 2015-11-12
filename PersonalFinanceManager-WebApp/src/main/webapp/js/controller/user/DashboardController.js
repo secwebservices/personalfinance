@@ -14,16 +14,16 @@ define(['jquery',
         'TemplateManager'], function($, ko, LoggerConfig, Mediator, IndexView, DashboardView, RouteController, TemplateManager){
 	
     function DashboardController(config){
-    	var self = this, indexView, dashboardView;
+    	var self = this;
     	
     	self.logger = new LoggerConfig().getLogger('DashboardController.js');
     	
-    	indexView = new IndexView({
+    	self.indexView = new IndexView({
             /** the element to render the view on. */
             element : '.viewpoint'
         });
 
-    	dashboardView = new DashboardView({
+    	self.dashboardView = new DashboardView({
             /** the element to render the view on. */
             element : '.viewpoint',
             applicationContext: self.applicationContext
@@ -31,6 +31,10 @@ define(['jquery',
         
         self.initialize(config);
     }
+    
+    DashboardController.prototype.indexView = undefined; 
+    
+    DashboardController.prototype.dashboardView = undefined;
     
     DashboardController.prototype.logger = undefined;
     

@@ -1,4 +1,11 @@
 <div class="loginWrapper" data-bind="dialog:{height: 225, width: 400, title: 'Login'}">
+    <div class="ui-widget">
+        <div class="session_expired">
+            Your session has expired.<br/>
+            Please use the form below to log back in.<br />
+            <span class="timeLeft">60</span> Second(s) until logout
+        </div>     
+    </div>
     <form class="edit-form login-form" data-bind="submit: doLogin">
         <label for="username">Username: </label>
         <input class="edit-text" type='text' data-bind="attr : { id:'username', autocorrect:'off', autocapitalize:'off'  }, value:username" placeholder="Username" />

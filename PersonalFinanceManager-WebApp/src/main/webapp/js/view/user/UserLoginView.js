@@ -38,6 +38,8 @@ define(['model/user/UserModel',
     
     UserLoginView.prototype.rendered = false;
     
+    UserLoginView.prototype.model = undefined;
+    
     UserLoginView.prototype.initialize = function (config) {
         var self = this, c, options = $.extend({}, config);
         
@@ -80,7 +82,7 @@ define(['model/user/UserModel',
      * @returns {object}
      */
     UserLoginView.prototype.render = function() {
-        var self = this, userModel, $el, templateData;
+        var self = this, $el, templateData;
 
         self.logger.debug("UserLoginView.prototype.render");
 
@@ -91,9 +93,9 @@ define(['model/user/UserModel',
             
             $el.html(templateData).show();
             
-            userModel = new UserModel();
+            self.model = new UserModel();
             
-            $.extend(userModel, {
+            $.extend(self.model, {
             	doLogin: function(){
             		var loginRequest = {
 						username: this.username(),
@@ -108,7 +110,7 @@ define(['model/user/UserModel',
             });
 
             ko.cleanNode($el[0]);
-            ko.applyBindings(userModel, $el[0]);
+            ko.applyBindings(self.model, $el[0]);
 
             self.rendered = true;
         } catch (e) {

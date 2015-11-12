@@ -80,7 +80,7 @@
 				<version>1.8</version>
 				<executions>
 					<execution>
-						<phase>generate-sources</phase>
+						<phase>process-sources</phase>
 						<configuration>
 							<target name="webapp grunt build">
 								<ant dir="src/main/webapp" target="build" />

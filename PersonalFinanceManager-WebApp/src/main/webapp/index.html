@@ -11,6 +11,13 @@
 </head>
 
 <body class="ui-widget ui-content">
+    <div class="ui-widget errors-container" data-bind="fadeVisible: (errors().length > 0)">
+       <div data-bind="foreach: errors">
+            <div class="error ui-state-error ui-corner-all" >
+                <span data-bind="text: $data"></span>
+            </div>         
+       </div>
+    </div>
 	<div class="header ui-widget-header ui-corner-top">
 	    <div class="wrapper">
             <div class="themechooser">
@@ -26,6 +33,7 @@
 	    </div>
 	</div>
 	<div class="section ui-widget-content ui-border-left ui-border-right">
+
 		<div class="wrapper viewpoint">
 			
 		</div>	
