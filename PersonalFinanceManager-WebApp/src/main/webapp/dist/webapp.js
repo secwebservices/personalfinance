@@ -17901,9 +17901,9 @@ define('core/config',['jquery', 'LoggerConfig'], function($, LoggerConfig){
                    {label:"Trontastic", value:"trontastic"},
                    {label:"Vader", value:"vader"}],
        sessionTimeOutTime: (1000 * 60 * 5),
-       build: "20151112",
-       version: "1.0.1",
-       environment: "local"
+       build: "${buildId}",
+       version: "${versionId}",
+       environment: "${enviromentId}"
     };
     
     // overrides for local env incremental builds
@@ -38400,7 +38400,7 @@ define('controller/user/UserController',['jquery',
 				}
 		    },
 		    error: function(jqXHR, status, error){
-		        self.applicationContext().errors.push(JSON.parse(jqXHR.responseText).message);
+		        self.applicationContext().addError(JSON.parse(jqXHR.responseText).message, true);
 		    },
 		    dataType: 'json'
 		});
@@ -39012,6 +39012,47 @@ define('controller/user/DashboardController',['jquery',
 });
     
     
+/*jslint browser: true, devel: true */
+
+/**
+ * @author Robert “The Man” Suppenbach
+ */
+define('model/ErrorModel',['LoggerConfig'], function(LoggerConfig) {
+
+    /**
+     * @constructor
+     */
+    function ErrorModel(config) {
+    	var self = this;
+    	self.logger = new LoggerConfig().getLogger('ErrorModel.js'); 
+    	
+    	if(config){
+        	self.initialize(config);    		
+    	}
+    }
+
+    ErrorModel.prototype.error = undefined;
+    
+    ErrorModel.prototype.timeout = true;
+
+    ErrorModel.prototype.initialize = function (config) {
+        var self = this, c, options = $.extend({}, config);
+        
+        self.logger.debug("Error Data: ", JSON.stringify(config));
+        
+        for (c in options) {
+            if (options.hasOwnProperty(c) && typeof self[c] === 'function') {
+                self[c](options[c]);
+            }else if (options.hasOwnProperty(c)){
+                self[c] = options[c];
+            }
+        }
+
+    };
+    
+    // Return the function
+    return ErrorModel;
+});
 /*jslint browser: true, devel: true, unparam: true, evil: true */
 
 /**
@@ -39025,7 +39066,8 @@ define('core/PersonalFinanceMain',[ 'jquery',
          'utilities/core/AjaxHandlers',
          'controller/user/UserController',
          'controller/user/DashboardController',
-         'controller/RouteController'
+         'controller/RouteController',
+         'model/ErrorModel'
          ], function(
         		 $,
         		 ko,
@@ -39035,7 +39077,8 @@ define('core/PersonalFinanceMain',[ 'jquery',
                  AjaxHandlers,
                  UserController,
                  DashboardController,
-                 RouteController
+                 RouteController,
+                 ErrorModel
                  ) {
 	
     var PersonalFinanceApp = {
@@ -39053,7 +39096,7 @@ define('core/PersonalFinanceMain',[ 'jquery',
                 sessionStorage.removeItem('user');
             },
             "applicationContext": ko.observable({
-                "errors": ko.observableArray([]),
+                "errors": ko.observableArray([]), // format {error: 'text', [timeout: true/false]}
                 "build": ko.observable(build),
                 "version": ko.observable(version),
                 "environment": ko.observable(environment),
@@ -39066,6 +39109,20 @@ define('core/PersonalFinanceMain',[ 'jquery',
             	},
             	"logoutRequest": function(){
             		Mediator.publish({channel: 'PF-Render', view: 'UserLogoutView', derender: false});
+            	},
+            	"addError": function(error, timeout){
+            	    var errorModel = {};
+            	    
+            	    if(timeout){
+            	        errorModel = new ErrorModel({error: error, timeout: timeout});
+            	    }else{
+            	        errorModel = new ErrorModel({error: error});
+            	    }            	    
+            	    PersonalFinanceApp.applicationContext().errors.push(errorModel);
+            	},
+            	"closeError": function(error){
+            	    var index = PersonalFinanceApp.applicationContext().errors.indexOf(error);
+            	    PersonalFinanceApp.applicationContext().errors.splice(index, 1);
             	}
             }),
             "load" : function(){
@@ -39089,12 +39146,15 @@ define('core/PersonalFinanceMain',[ 'jquery',
                 PersonalFinanceApp.applicationContext().errors.subscribe(function(changes){
                     changes.forEach(function(change) {
                         if (change.status === 'added') {
-                            setTimeout(function(){
-                                PersonalFinanceApp.applicationContext().errors.shift();                             
-                            }, 3000);
+                            if(change.value.timeout){
+                                setTimeout(function(){
+                                    var error = change.value, 
+                                        index = PersonalFinanceApp.applicationContext().errors.indexOf(error);
+                                    PersonalFinanceApp.applicationContext().errors.splice(index, 1);                             
+                                }, 3000);
+                            }
                         }
                     });
-
                 }, null, "arrayChange");
 
                                 

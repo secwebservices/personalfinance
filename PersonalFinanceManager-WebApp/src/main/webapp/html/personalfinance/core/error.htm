@@ -1,0 +1,8 @@
+<div class="ui-widget errors-container">
+   <div data-bind="foreach: errors">
+        <div data-bind="fadeVisible: ($data.error !== '')" class="error ui-state-error ui-corner-all" >
+            <span data-bind="text: $data.error"></span>
+            <button data-bind="button: {icons: { primary: 'ui-icon-closethick' }}, click: $parent.closeError" class="ui-button-close" title="close"></button>
+        </div>         
+   </div>
+</div>

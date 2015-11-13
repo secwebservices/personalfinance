@@ -124,9 +124,8 @@ h6 {
 
 .errors-container {
 	position: fixed;
-	top: 10px;
-	width: ~"calc(100% - 30px)";
-	margin: 0 auto;
+	top: 5px;
+	width: ~"calc(100% - 38px)";
 	z-index: 1000;
 	line-height: 25px;
 }
@@ -136,7 +135,22 @@ h6 {
     float: left;
     width: 100%;
     margin: 2px;
-    padding: 2px;
+    padding: 4px;
+    position: relative;
+    
+    .ui-button-close {
+        position: absolute;
+	    right: .3em;
+	    top: 50%;
+	    width: 20px;
+	    margin: -10px 0 0 0;
+	    padding: 1px;
+	    height: 20px;
+	    
+	    .ui-button-icon-primary {
+	       left: 0;
+	    }
+    }
 }
 
 .session_expired {

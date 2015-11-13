@@ -11,7 +11,8 @@ define([ 'jquery',
          'utilities/core/AjaxHandlers',
          'controller/user/UserController',
          'controller/user/DashboardController',
-         'controller/RouteController'
+         'controller/RouteController',
+         'model/ErrorModel'
          ], function(
         		 $,
         		 ko,
@@ -21,7 +22,8 @@ define([ 'jquery',
                  AjaxHandlers,
                  UserController,
                  DashboardController,
-                 RouteController
+                 RouteController,
+                 ErrorModel
                  ) {
 	
     var PersonalFinanceApp = {
@@ -39,7 +41,7 @@ define([ 'jquery',
                 sessionStorage.removeItem('user');
             },
             "applicationContext": ko.observable({
-                "errors": ko.observableArray([]),
+                "errors": ko.observableArray([]), // format {error: 'text', [timeout: true/false]}
                 "build": ko.observable(build),
                 "version": ko.observable(version),
                 "environment": ko.observable(environment),
@@ -52,6 +54,20 @@ define([ 'jquery',
             	},
             	"logoutRequest": function(){
             		Mediator.publish({channel: 'PF-Render', view: 'UserLogoutView', derender: false});
+            	},
+            	"addError": function(error, timeout){
+            	    var errorModel = {};
+            	    
+            	    if(timeout){
+            	        errorModel = new ErrorModel({error: error, timeout: timeout});
+            	    }else{
+            	        errorModel = new ErrorModel({error: error});
+            	    }            	    
+            	    PersonalFinanceApp.applicationContext().errors.push(errorModel);
+            	},
+            	"closeError": function(error){
+            	    var index = PersonalFinanceApp.applicationContext().errors.indexOf(error);
+            	    PersonalFinanceApp.applicationContext().errors.splice(index, 1);
             	}
             }),
             "load" : function(){
@@ -75,12 +91,15 @@ define([ 'jquery',
                 PersonalFinanceApp.applicationContext().errors.subscribe(function(changes){
                     changes.forEach(function(change) {
                         if (change.status === 'added') {
-                            setTimeout(function(){
-                                PersonalFinanceApp.applicationContext().errors.shift();                             
-                            }, 3000);
+                            if(change.value.timeout){
+                                setTimeout(function(){
+                                    var error = change.value, 
+                                        index = PersonalFinanceApp.applicationContext().errors.indexOf(error);
+                                    PersonalFinanceApp.applicationContext().errors.splice(index, 1);                             
+                                }, 3000);
+                            }
                         }
                     });
-
                 }, null, "arrayChange");
 
                                 

@@ -92,7 +92,7 @@ define(['jquery',
 				}
 		    },
 		    error: function(jqXHR, status, error){
-		        self.applicationContext().errors.push(JSON.parse(jqXHR.responseText).message);
+		        self.applicationContext().addError(JSON.parse(jqXHR.responseText).message, true);
 		    },
 		    dataType: 'json'
 		});
