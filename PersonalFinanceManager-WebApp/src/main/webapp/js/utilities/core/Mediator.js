@@ -2,6 +2,36 @@
 
 /**
  * @author Robert “The Man” Suppenbach
+ * 
+ * Available Channels
+ *  CONTROL Channels
+ *  PF-Heartbeat - 1 second system wide heart beat
+ *      Parameters: message: (type) Object {timestamp: ts}
+ *      
+ *  PF-Render - render a view. 
+ *      Parameters: view: (type) String 'ViewJSName' 
+ *      
+ *  PF-Derender - derender a view.  Parameters: view
+ *      Parameters: view: (type) String 'ViewJSName' 
+ *      
+ *  PF-Login-Request - user login request
+ *      Parameters: loginRequest: (type) Object {username :'name', password: 'password'}
+ *      
+ *  PF-Logout-Request - user logout request
+ *      Parameters: none
+ *      
+ *  PF-Session-Expired - user session from server terminated
+ *      Parameters: none
+ *      
+ *  NOTIFICATION Channels
+ *  PF-Error - renders and error message to the user. 
+ *      Parameters: message: (type) String 'Error Message', [timeout: (type) Boolean (default=true)]
+ *      
+ *  PF-Login-Success - user login was successful
+ *      Parameters: none
+ *      
+ *  PF-Logout-Success - user logout was successful
+ *      Parameters: none
  */
 define(['jquery', 'LoggerConfig'], function ($, LoggerConfig) {
     'use strict';

@@ -10,8 +10,9 @@ define(['jquery',
         'Mediator',
         'view/user/UserLoginView',
         'view/user/UserLogoutView',
+        'view/user/SessionExpiredView',
         'controller/RouteController',
-        'TemplateManager'], function($, ko, LoggerConfig, Nediator, UserLoginView, UserLogoutView, RouteController, TemplateManager){
+        'TemplateManager'], function($, ko, LoggerConfig, Nediator, UserLoginView, UserLogoutView, SessionExpiredView, RouteController,  TemplateManager){
 	
     function UserController(config){
     	var self = this;
@@ -25,6 +26,12 @@ define(['jquery',
         });
 
         self.userLogoutView = new UserLogoutView({
+            /** the element to render the view on. */
+            element : '.userdialog',
+            user: config.user
+        });
+        
+        self.sessionExpiredView = new SessionExpiredView({
             /** the element to render the view on. */
             element : '.userdialog',
             user: config.user
@@ -46,6 +53,8 @@ define(['jquery',
     
     UserController.prototype.userLogoutView = undefined;
     
+    UserController.prototype.sessionExpiredView = undefined;
+    
     UserController.prototype.logger = undefined;
     
     UserController.prototype.applicationContext = undefined;
@@ -55,12 +64,12 @@ define(['jquery',
     UserController.prototype.userLoggedIn = undefined;
     
     UserController.prototype.userSessionHasTimedout = false;
+    
+    UserController.prototype.userSessionHasExpired = false;
 
     UserController.prototype.timeleft = 60;
     
     UserController.prototype.heatbeatcounter = 1;
-    
-    UserController.prototype.userStore = sessionStorage;
 
     UserController.prototype.sessionTimeoutDialog = undefined;
     
@@ -72,6 +81,18 @@ define(['jquery',
     
     UserController.prototype.timeoutInterval = undefined;
     
+    UserController.prototype.getUserSession = function(){
+        return JSON.parse(sessionStorage.getItem('user'));  
+    };
+    
+    UserController.prototype.setUserSession = function(data){
+        sessionStorage.setItem('user', JSON.stringify(data)); 
+    };
+    
+    UserController.prototype.clearUserSession = function(){
+        sessionStorage.removeItem('user'); 
+    };
+
     UserController.prototype.loginRequest = function(message){
     	var self = this, loginRequest = message.loginRequest;
     	
@@ -82,17 +103,19 @@ define(['jquery',
 		    data: JSON.stringify(loginRequest),
 		    success: function(data, status, request){
 				self.logger.debug('Login Request', status);
-				self.userStore.setItem('user', JSON.stringify(data));
+				self.setUserSession('user', JSON.stringify(data));
 				self.user(data);
-				self.userLoggedIn = true;
-				self.timeleft = 60;
+                self.userLoggedIn = true;
+                self.userSessionHasExpired = false;
+                self.userSessionHasTimedout = false;
+                self.timeleft = 60;
 				if(status === 'success'){
 			    	Mediator.publish({channel: 'PF-Login-Success'});
 			    	Mediator.publish({channel: 'PF-Derender', view: 'UserLoginView'});
 				}
 		    },
 		    error: function(jqXHR, status, error){
-		        self.applicationContext().addError(JSON.parse(jqXHR.responseText).message, true);
+		        Mediator.publish({channel: 'PF-Error', message: JSON.parse(jqXHR.responseText).message});
 		    },
 		    dataType: 'json'
 		});
@@ -106,7 +129,7 @@ define(['jquery',
 		    url: '/api/user/logout',
 		    success: function(data, status, request){
 				self.logger.debug('Logout Request', status);
-				self.userStore.removeItem('user');
+				self.clearUserSession();
 				self.user(undefined);
 				self.userLoggedIn = false;
 				self.timeleft = 60;
@@ -160,13 +183,16 @@ define(['jquery',
         
         self.sessionExpiredTemplate = TemplateManager.getTemplate('session_expired');
         
-        if(self.userStore.getItem('user')){
-        	user = JSON.parse(self.userStore.getItem('user'));
+        user = self.getUserSession();
+        
+        if(user){
         	self.user(user);
         	self.userLoggedIn = true;
         }
         
         Mediator.subscribe({channel: 'PF-Heartbeat', context: self, callback: self.serverHeartbeat});  
+
+        Mediator.subscribe({channel: 'PF-Session-Expired', context: self, callback: self.expireUserSession}); 
         
         $.ajax('/api/ping', {
             cache:false,
@@ -178,6 +204,12 @@ define(['jquery',
             dataType: 'json'
         });
         
+        $(document).ajaxError(function(event, xhr, settings, exception) {
+            if (xhr.status === 401 && self.userLoggedIn) {
+                Mediator.publish({"channel" : "PF-Session-Expired"}); 
+            }    
+        }); 
+        
     };
     
     /**
@@ -188,7 +220,9 @@ define(['jquery',
     UserController.prototype.serverHeartbeat = function(data) {
         var self = this, ts = data.message.timestamp, url, currentStatus;
         
-        if (!self.userStore.getItem('user') && (self.user() && !self.userSessionHasTimedout)) {
+        if (!self.getUserSession() && (
+                self.user() && !self.userSessionHasTimedout && !self.userSessionHasExpired)
+        ) {
             self.sessionTimeout();
         }
 
@@ -277,61 +311,25 @@ define(['jquery',
 
     };
     
-    
     /**
      * sessionExpired
      */
     UserController.prototype.sessionExpired = function() {
         var self = this;
     	
-        self.userSessionHasTimedout = true;
+        self.userSessionHasExpired = true;
+        self.userSessionHasTimedout = false;
         self.logger.debug('UserController.prototype.sessionExpired', self.user);
 
-        if($('.sessionExpiredDialog').length === 0){
-            $('body').append(self.sessionExpiredTemplate);        	
-        }
+        Mediator.publish({channel: 'PF-Render', view: 'SessionExpiredView', derender: false});
+        
+        self.timeleft = 60;
+        $('.timeLeft').html(self.timeleft);
+        clearInterval(self.timeoutInterval);
 
-        self.sessionExpiredDialog = $('.sessionExpiredDialog').dialog(
-        {
-            title : 'Notification',
-            modal : true,
-            width : '420px',
-            position :
-            {
-                my : 'center',
-                at : 'center',
-                of : '.section'
-            },
-            buttons :
-            {
-                'Ok' : function() {
-                    $(this).dialog('close');
-                    self.logoutRequest();
-                },
-                'Cancel' : function() {
-                	self.userSessionHasTimedout = false;
-                	if(self.user){
-                    	self.userStore.setItem('user', JSON.stringify(ko.toJS(self.user)));                		
-                	}
-                    $(this).dialog('close');
-                }
-            },
-            close : function() {
-            	clearInterval(self.timeoutInterval);
-                $(this).dialog('destroy');
-                $('.sessionExpiredDialog').remove();
-            },
-            open : function() {
-            	self.timeleft = 60;
-            	$('.timeLeft').html(self.timeleft);
-            	clearInterval(self.timeoutInterval);
-
-            	self.timeoutInterval = setInterval(function(){
-            		self.logoutTimer();
-        		}, 1000);  
-            }
-        });
-
+        self.timeoutInterval = setInterval(function(){
+            self.logoutTimer();
+        }, 1000);  
     };    
     
     UserController.prototype.logoutTimer = function() {
@@ -341,10 +339,23 @@ define(['jquery',
         $('.timeLeft').html(self.timeleft);
 
         if (self.timeleft === 0) {
-            self.sessionTimeoutDialog.dialog('close');
+            Mediator.publish({channel: 'PF-Derender', view: 'SessionExpiredView', derender: false});
+            if(self.sessionTimeoutDialog){
+                self.sessionTimeoutDialog.dialog('close');                
+            }
+
             self.logoutRequest();
         }
+        
+        
     };
+
+    UserController.prototype.expireUserSession = function(){
+        var self = this;
+        self.sessionExpired();   
+        self.clearUserSession();
+    };
+    
     
     return UserController;
     

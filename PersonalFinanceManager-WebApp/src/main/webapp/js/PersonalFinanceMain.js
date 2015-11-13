@@ -57,12 +57,7 @@ define([ 'jquery',
             	},
             	"addError": function(error, timeout){
             	    var errorModel = {};
-            	    
-            	    if(timeout){
-            	        errorModel = new ErrorModel({error: error, timeout: timeout});
-            	    }else{
-            	        errorModel = new ErrorModel({error: error});
-            	    }            	    
+            	    errorModel = new ErrorModel({error: error, timeout: timeout});            	    
             	    PersonalFinanceApp.applicationContext().errors.push(errorModel);
             	},
             	"closeError": function(error){
@@ -102,7 +97,15 @@ define([ 'jquery',
                     });
                 }, null, "arrayChange");
 
-                                
+                Mediator.subscribe({channel: 'PF-Error', context: PersonalFinanceApp, callback: function(error){
+                    if(typeof error.timeout !== 'undefined'){
+                        PersonalFinanceApp.applicationContext().addError(error.message, error.timeout);                        
+                    }else{
+                        PersonalFinanceApp.applicationContext().addError(error.message, true);
+                    }
+
+                }});
+                
             	RouteController.router.run('#welcome');
                 
             	$('body').on('click tap keypress', PersonalFinanceApp.sessionActivity);

@@ -26,9 +26,9 @@ define(['jquery', 'LoggerConfig'], function($, LoggerConfig){
                    {label:"Trontastic", value:"trontastic"},
                    {label:"Vader", value:"vader"}],
        sessionTimeOutTime: (1000 * 60 * 5),
-       build: "${buildId}",
-       version: "${versionId}",
-       environment: "${enviromentId}"
+       build: "20151113",
+       version: "1.0.1",
+       environment: "local"
     };
     
     // overrides for local env incremental builds

@@ -1,9 +1,8 @@
-<div class="loginWrapper" data-bind="dialog:{height: 225, width: 400, title: 'Login'}">
+<div class="loginWrapper" data-bind="dialog:{height: 265, width: 400, title: 'Session Expired'}">
     <div class="ui-widget">
         <div class="session_expired">
-            Your session has expired.<br/>
-            Please use the form below to log back in.<br />
-            <span class="timeLeft">60</span> Second(s) until logout
+            <p>Your session has expired.<br/>
+            Please use the form below to log back in.</p>
         </div>     
     </div>
     <form class="edit-form login-form" data-bind="submit: doLogin">
@@ -17,4 +16,5 @@
             <input type="submit" value="Login" data-bind="button:{}"/>
         </div>
     </form>
+    <div style="float: left; width:100%; text-align:center; margin: 5px 0;"><span class="timeLeft">60</span> second(s) left</div>
 </div>

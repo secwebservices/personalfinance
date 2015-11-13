@@ -37,6 +37,7 @@
             <arg value="buildId=${buildId}"/>
             <arg value="--versionId=${versionId}"/>	
 			<arg value="--enviromentId=${enviromentId}"/>
+			<arg value="generateSourceMaps=false"/>
 		</exec>
 
 		<echo message="${log}"/>

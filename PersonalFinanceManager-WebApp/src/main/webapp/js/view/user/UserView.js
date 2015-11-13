@@ -36,7 +36,9 @@ define(['model/user/UserModel',
 
     UserView.prototype.template = 'user_profile';
     
-    UserView.prototype.rendered = false;
+    UserLoginView.prototype.rendered = false;
+    
+    UserLoginView.prototype.model = undefined;
     
     UserView.prototype.initialize = function (config) {
         var self = this, c, options = $.extend({}, config);
@@ -88,13 +90,27 @@ define(['model/user/UserModel',
             $el = $(self.element);
             
             templateData = TemplateManager.getTemplate(self.template);
-
-            $el.html(templateData);
-
-            userModel = new UserModel();
-
+            
+            $el.html(templateData).show();
+            
+            self.model = new UserModel();
+            
+            $.extend(self.model, {
+                doLogin: function(){
+                    var loginRequest = {
+                        username: this.username(),
+                        password: this.password()
+                    };
+                    
+                    Mediator.publish({channel: 'PF-Login-Request', loginRequest: loginRequest});
+                },
+                derender: function(){
+                    Mediator.publish({channel: 'PF-Derender', view: 'SessionExpiredView'});
+                }
+            });
+            
             ko.cleanNode($el[0]);
-            ko.applyBindings(userModel, $el[0]);
+            ko.applyBindings(self.model, $el[0]);
             
             self.rendered = true;
         } catch (e) {
@@ -105,18 +121,20 @@ define(['model/user/UserModel',
     
     UserView.prototype.derender = function() {
         var self = this, $el;
-
+        
         self.logger.debug('UserView Derender Request');
         
-        try {
+        try {            
             $el = $(self.element);
+            $el.html('').hide();
+            
             TemplateManager.clearTemplate(self.template);
             ko.cleanNode($el[0]);
             
             self.rendered = false;
         } catch (e) {
             self.logger.error('UserView Derender Request', e);
-        }        
+        }     
     };
 
     // Return the function

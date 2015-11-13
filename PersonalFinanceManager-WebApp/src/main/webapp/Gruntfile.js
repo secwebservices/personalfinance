@@ -1,5 +1,6 @@
 module.exports = function(grunt) {
-
+    var generateSourceMaps = grunt.option('generateSourceMaps') || true;
+    
     grunt.initConfig({
         pkg : grunt.file.readJSON('package.json'),
         qunit : {
@@ -57,6 +58,7 @@ module.exports = function(grunt) {
                     baseUrl : "./",
                     mainConfigFile : "js/config/require-config.js",
                     preserveLicenseComments : false,
+                    generateSourceMaps: generateSourceMaps,
                     name : "pfapp.js",
                     include : [
                       	'node_modules/requirejs/require.js',
@@ -115,7 +117,7 @@ module.exports = function(grunt) {
     ]);
     
     grunt.registerTask('package', [
-        'build', 'uglify'
+        'uglify'
     ]);
 
 };

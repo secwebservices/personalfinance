@@ -60,8 +60,11 @@ define(['jquery',
             });
             
             $(document).ajaxError(function(event, xhr, settings, exception) {
-                logger.debug('AJAX', settings.type, settings.url, xhr.status, xhr.statusText, settings.dataType, exception);  
+                logger.debug('AJAX', settings.type, settings.url, xhr.status, xhr.statusText, settings.dataType, exception);
+                // if we get a 401 we need to return to request login
             });               
+            
+            
         }    	
     	
         Mediator.subscribe({

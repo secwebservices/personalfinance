@@ -88,6 +88,7 @@
 				<version>1.8</version>
 				<executions>
 					<execution>
+					    <id>compile</id>
 						<phase>process-sources</phase>
 						<configuration>
 							<target name="webapp grunt build">
@@ -102,6 +103,21 @@
 							<goal>run</goal>
 						</goals>
 					</execution>
+                    <execution>
+                        <id>package</id>
+                        <phase>process-sources</phase>
+                        <configuration>
+                            <target name="webapp grunt package">
+                                 <property name="buildId" value="${timestamp}"/>
+                                 <property name="versionId" value="${project.version}"/>
+                                 <property name="enviromentId" value="${env-artifact-id}"/>
+                                 <ant dir="src/main/webapp" target="build" />
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
 				</executions>
 			</plugin>
 

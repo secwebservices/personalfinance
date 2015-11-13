@@ -26,6 +26,7 @@ require.config({
     		exports: '$',
     		deps: ['jquery']
     	}
-    }
+    },
+    useSourceUrl: true
 
 });
